@@ -4,97 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Image Editor</title>
-    <!-- CSS embedded within <style> tags and scoped -->
     <style>
-        /* Scope all styles to the container */
-        #image-resizer-tool-container {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff;
-            padding: 20px 25px;
-            border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-            width: 100%;
-            max-width: 1000px;
-            margin: 25px auto;
-            text-align: center;
-            box-sizing: border-box;
-            border: 1px solid #e0e0e0;
-        }
-
+        /* Styles remain the same */
+        #image-resizer-tool-container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; padding: 20px 25px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); width: 95%; max-width: 1100px; margin: 25px auto; text-align: center; box-sizing: border-box; border: 1px solid #e0e0e0; overflow-x: hidden; }
         #image-resizer-tool-container * { box-sizing: border-box; }
         #image-resizer-tool-container h1 { color: #2c3e50; margin-bottom: 25px; font-size: 2em; font-weight: 600; }
-        #image-resizer-tool-container h2, #image-resizer-tool-container h3 {
-            color: #34495e; margin-top: 25px; margin-bottom: 15px;
-            border-bottom: 2px solid #ecf0f1; padding-bottom: 10px;
-            font-size: 1.5em; text-align: left; font-weight: 500;
-        }
+        #image-resizer-tool-container h2, #image-resizer-tool-container h3 { color: #34495e; margin-top: 25px; margin-bottom: 15px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; font-size: 1.5em; text-align: left; font-weight: 500; }
         #image-resizer-tool-container h3 { font-size: 1.3em; margin-top: 20px; border-bottom-style: dashed; }
-
-        /* --- Upload Section --- */
-        #image-resizer-tool-container .upload-section {
-            margin-bottom: 30px; border: 2px dashed #bdc3c7; padding: 25px; border-radius: 6px;
-            background-color: #f8f9fa; position: relative; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-        #image-resizer-tool-container .upload-section:hover { background-color: #e9ecef; border-color: #95a5a6; }
-        #image-resizer-tool-container .upload-button {
-            display: inline-block; padding: 12px 30px; background-color: #3498db; color: white; border: none;
-            border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: 500; transition: background-color 0.2s ease, transform 0.1s ease;
-        }
+        #image-resizer-tool-container .upload-section { margin-bottom: 30px; border: 2px dashed #bdc3c7; padding: 25px; border-radius: 6px; background-color: #f8f9fa; position: relative; transition: background-color 0.2s ease, border-color 0.2s ease; }
+        #image-resizer-tool-container .upload-section.no-image { cursor: pointer; }
+        #image-resizer-tool-container .upload-section.no-image:hover { background-color: #e9ecef; border-color: #95a5a6; }
+        #image-resizer-tool-container .upload-button { display: inline-block; padding: 12px 30px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: 500; transition: background-color 0.2s ease, transform 0.1s ease; position: relative; z-index: 1; }
         #image-resizer-tool-container .upload-button:hover { background-color: #2980b9; transform: translateY(-1px); }
         #image-resizer-tool-container .upload-button:active { transform: translateY(0px); }
         #image-resizer-tool-container #imageInput { display: none; }
         #image-resizer-tool-container .file-name-display { margin-top: 12px; color: #555; font-style: italic; font-size: 0.95em; min-height: 1.2em; }
-
-        /* --- Main Content (Preview & Controls) --- */
-        #image-resizer-tool-container .main-content { display: flex; flex-wrap: wrap; gap: 30px; margin-top: 20px; text-align: left; }
-        #image-resizer-tool-container .preview-section, #image-resizer-tool-container .controls-section { flex: 1; min-width: 320px; }
-
-        /* --- Preview Section --- */
-        #image-resizer-tool-container #previewCanvas {
-            display: block; max-width: 100%; height: auto; border: 1px solid #ccc; margin: 0 auto 15px auto; background-color: #fff;
-            background-image: linear-gradient(45deg, #e8e8e8 25%, transparent 25%), linear-gradient(-45deg, #e8e8e8 25%, transparent 25%),
-                              linear-gradient(45deg, transparent 75%, #e8e8e8 75%), linear-gradient(-45deg, transparent 75%, #e8e8e8 75%);
-            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px; border-radius: 4px;
-        }
-        #image-resizer-tool-container .dimensions-info { font-size: 0.9em; color: #666; text-align: center; margin-bottom: 5px; }
+        #image-resizer-tool-container .main-content { display: flex; flex-wrap: wrap; gap: 25px; margin-top: 20px; text-align: left; }
+        #image-resizer-tool-container .preview-section { flex: 1.5; min-width: 300px; }
+        #image-resizer-tool-container .adjustments-section { width: 100%; margin-top: 0; }
+        #image-resizer-tool-container .controls-section { flex: 1; min-width: 280px; }
+        #image-resizer-tool-container #previewCanvas { display: block; width: 100%; max-width: 100%; height: auto; border: 1px solid #ccc; margin: 0 auto 15px auto; background-color: #fff; background-image: linear-gradient(45deg, #e8e8e8 25%, transparent 25%), linear-gradient(-45deg, #e8e8e8 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e8e8e8 75%), linear-gradient(-45deg, transparent 75%, #e8e8e8 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px; border-radius: 4px; }
+        #image-resizer-tool-container .dimensions-info { font-size: 0.9em; color: #666; text-align: center; margin-bottom: 5px; word-break: break-all; }
         #image-resizer-tool-container .dimensions-info span { font-weight: 500; color: #444; }
-
-        /* --- Controls Section --- */
+        #image-resizer-tool-container .adjustments-section h3 { margin-top: 10px; }
         #image-resizer-tool-container .control-group { margin-bottom: 18px; }
         #image-resizer-tool-container .control-group.inline-group { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 15px; }
         #image-resizer-tool-container .control-group.inline-group label { margin-bottom: 0; flex-shrink: 0; font-weight: normal; }
         #image-resizer-tool-container .control-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #495057; font-size: 0.95em; }
-        #image-resizer-tool-container .control-group input[type="number"],
-        #image-resizer-tool-container .control-group select,
-        #image-resizer-tool-container .control-group input[type="range"],
-        #image-resizer-tool-container .control-group input[type="color"] {
-            width: 100%; padding: 9px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 1em;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff;
-        }
+        #image-resizer-tool-container .control-group input[type="number"], #image-resizer-tool-container .control-group select, #image-resizer-tool-container .control-group input[type="range"], #image-resizer-tool-container .control-group input[type="color"] { width: 100%; padding: 9px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 1em; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: #fff; }
         #image-resizer-tool-container .control-group input[type="color"] { padding: 4px; min-height: 40px; max-width: 70px; cursor: pointer; vertical-align: middle; }
         #image-resizer-tool-container .control-group input[type="number"] { max-width: 120px; }
-        #image-resizer-tool-container .control-group input:focus, #image-resizer-tool-container .control-group select:focus {
-            border-color: #80bdff; outline: 0; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
+        #image-resizer-tool-container .control-group input:focus, #image-resizer-tool-container .control-group select:focus { border-color: #80bdff; outline: 0; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
         #image-resizer-tool-container .control-group input[type="range"] { padding: 0; cursor: pointer; height: 8px; background-color: #e9ecef; -webkit-appearance: none; appearance: none; border-radius: 4px; }
-        #image-resizer-tool-container .control-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; transition: background-color 0.15s ease; /* Added transition */ }
-        #image-resizer-tool-container .control-group input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; border: none; transition: background-color 0.15s ease; /* Added transition */ }
-        /* --- HOVER EFFECT FOR RANGE THUMBS --- */
+        #image-resizer-tool-container .control-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; transition: background-color 0.15s ease, box-shadow 0.15s ease; }
+        #image-resizer-tool-container .control-group input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; border: none; transition: background-color 0.15s ease, box-shadow 0.15s ease; }
         #image-resizer-tool-container .control-group input[type="range"]::-webkit-slider-thumb:hover { background-color: #2980b9; }
         #image-resizer-tool-container .control-group input[type="range"]::-moz-range-thumb:hover { background-color: #2980b9; }
-
-
-        /* Specific group styles */
-        #image-resizer-tool-container .dimension-inputs { display: flex; gap: 15px; }
-        #image-resizer-tool-container .dimension-inputs > div { flex: 1; }
+        #image-resizer-tool-container .control-group input[type="range"]:active::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.3); }
+        #image-resizer-tool-container .control-group input[type="range"]:active::-moz-range-thumb { box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.3); }
+        #image-resizer-tool-container .dimension-inputs { display: flex; gap: 15px; flex-wrap: wrap; }
+        #image-resizer-tool-container .dimension-inputs > div { flex: 1; min-width: 100px; }
         #image-resizer-tool-container .aspect-ratio-group { display: flex; align-items: center; margin-top: 10px; }
-        #image-resizer-tool-container .aspect-ratio-group input[type="checkbox"] { width: auto; height: 16px; margin-right: 8px; cursor: pointer; }
+        #image-resizer-tool-container .aspect-ratio-group input[type="checkbox"] { width: auto; height: 16px; margin-right: 8px; cursor: pointer; flex-shrink: 0; }
         #image-resizer-tool-container .aspect-ratio-group label { margin-bottom: 0; font-weight: normal; cursor: pointer; }
-        #image-resizer-tool-container .quality-group label span, #image-resizer-tool-container .adjustment-group .value-display { font-weight: bold; color: #3498db; margin-left: 5px; display: inline-block; min-width: 35px; text-align: right; } /* Wider min-width */
+        #image-resizer-tool-container .quality-group label span, #image-resizer-tool-container .adjustment-group .value-display { font-weight: bold; color: #3498db; margin-left: 5px; display: inline-block; min-width: 35px; text-align: right; }
         #image-resizer-tool-container .transform-buttons { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-        #image-resizer-tool-container .transform-buttons button { flex: 1; min-width: 90px; padding: 8px 10px; background-color: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s ease; }
-        #image-resizer-tool-container .transform-buttons button:hover { background-color: #6c7a7b; }
-        #image-resizer-tool-container .border-controls { display: flex; align-items: center; gap: 15px; }
+        #image-resizer-tool-container .transform-buttons button { flex: 1 1 80px; padding: 8px 10px; background-color: #7f8c8d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s ease; }
+        #image-resizer-tool-container .transform-buttons button:hover:not(:disabled) { background-color: #6c7a7b; }
+        #image-resizer-tool-container .border-controls { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         #image-resizer-tool-container .border-controls label { margin-bottom: 0; flex-shrink: 0; }
         #image-resizer-tool-container .border-controls input[type="number"] { max-width: 80px; }
         #image-resizer-tool-container .border-controls input[type="color"] { max-width: 50px; }
@@ -102,712 +59,237 @@
         #image-resizer-tool-container .adjustment-group label { margin-bottom: 0; justify-self: start; min-width: 70px; }
         #image-resizer-tool-container .adjustment-group input[type="range"] { width: 100%; }
         #image-resizer-tool-container .adjustment-group .value-display { justify-self: end; font-size: 0.9em; }
-        #image-resizer-tool-container .reset-adjustments-btn { padding: 6px 12px; font-size: 0.85em; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease; margin-top: 5px; float: right; }
-        #image-resizer-tool-container .reset-adjustments-btn:hover { background-color: #c0392b; }
-
-        #image-resizer-tool-container .output-size-group p { margin-top: 15px; font-size: 1em; color: #333; }
+        #image-resizer-tool-container .reset-adjustments-btn { padding: 6px 12px; font-size: 0.85em; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease; margin-top: 0px; float: right; }
+        #image-resizer-tool-container .reset-adjustments-btn:hover:not(:disabled) { background-color: #c0392b; }
+        #image-resizer-tool-container .output-size-group p { margin-top: 15px; font-size: 1em; color: #333; word-break: break-all; }
         #image-resizer-tool-container .output-size-group strong { color: #27ae60; font-weight: 600; }
-        #image-resizer-tool-container .output-size-group .size-label { font-style: italic; font-size: 0.9em; color: #666; margin-right: 5px; } /* Label for size type */
-
-        /* --- Action Buttons --- */
-        #image-resizer-tool-container .action-buttons {
-            display: flex; flex-direction: column; /* Stack buttons vertically */
-            gap: 10px; margin-top: 20px; /* Reduced top margin */
-        }
-
-        #image-resizer-tool-container .apply-btn, /* Style for Apply button */
-        #image-resizer-tool-container .download-btn,
-        #image-resizer-tool-container .reset-btn {
-             width: 100%; /* Full width */ padding: 12px 20px; /* Adjusted padding */ border: none; border-radius: 5px;
-             cursor: pointer; font-size: 1.1em; font-weight: 600;
-             transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease; text-align: center;
-        }
-
-         /* Specific Button Colors */
-         #image-resizer-tool-container .apply-btn { background-color: #3498db; color: white; } /* Blue for Apply */
+        #image-resizer-tool-container .output-size-group .size-label { font-style: italic; font-size: 0.9em; color: #666; margin-right: 5px; }
+        #image-resizer-tool-container .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        #image-resizer-tool-container .apply-btn, #image-resizer-tool-container .download-btn, #image-resizer-tool-container .reset-btn { width: 100%; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: 600; transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.1s ease; text-align: center; }
+         #image-resizer-tool-container .apply-btn { background-color: #3498db; color: white; }
          #image-resizer-tool-container .apply-btn:hover:not(:disabled) { background-color: #2980b9; transform: translateY(-1px); }
-
-         #image-resizer-tool-container .download-btn { background-color: #2ecc71; color: white; } /* Green for Download */
+         #image-resizer-tool-container .download-btn { background-color: #2ecc71; color: white; }
          #image-resizer-tool-container .download-btn:hover:not(:disabled) { background-color: #27ae60; transform: translateY(-1px); }
-
-         #image-resizer-tool-container .reset-btn { background-color: #95a5a6; color: white; } /* Grey for Reset */
+         #image-resizer-tool-container .reset-btn { background-color: #95a5a6; color: white; }
          #image-resizer-tool-container .reset-btn:hover:not(:disabled) { background-color: #7f8c8d; transform: translateY(-1px); }
-
-         /* Disabled State */
-         #image-resizer-tool-container .apply-btn:disabled,
-         #image-resizer-tool-container .download-btn:disabled,
-         #image-resizer-tool-container .reset-btn:disabled {
-             opacity: 0.6; cursor: not-allowed; transform: none;
-         }
-         /* Specific disabled colors (optional) */
+         #image-resizer-tool-container .apply-btn:disabled, #image-resizer-tool-container .download-btn:disabled, #image-resizer-tool-container .reset-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
          #image-resizer-tool-container .apply-btn:disabled { background-color: #a9cce3; }
          #image-resizer-tool-container .download-btn:disabled { background-color: #a3e9a4; }
          #image-resizer-tool-container .reset-btn:disabled { background-color: #bdc3c7; }
-
-
-         #image-resizer-tool-container .action-buttons button:active { transform: translateY(0px); }
-
-        /* --- Status Message & Loading Spinner --- */
-        #image-resizer-tool-container .status-container { /* Added container */
-            margin-top: 20px;
-            min-height: 1.3em;
-            text-align: center;
-            display: flex; /* Use flex to align text and spinner */
-            align-items: center;
-            justify-content: center;
-        }
-        #image-resizer-tool-container .status-message {
-            /* Removed margin-top, min-height, text-align */
-             padding: 8px 10px;
-             border-radius: 4px;
-             display: inline; /* Allow it to sit next to spinner */
-        }
+         #image-resizer-tool-container .action-buttons button:active:not(:disabled) { transform: translateY(0px); }
+        #image-resizer-tool-container .status-container { margin-top: 20px; min-height: 1.3em; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        #image-resizer-tool-container .status-message { padding: 8px 10px; border-radius: 4px; display: inline; }
         #image-resizer-tool-container .status-message.error { color: #c0392b; background-color: #f9d5d5; }
         #image-resizer-tool-container .status-message.info { color: #2980b9; background-color: #d5eaf9; }
         #image-resizer-tool-container .status-message.success { color: #27ae60; background-color: #d5f9e3; }
+        #image-resizer-tool-container .spinner { border: 3px solid #f0f0f0; border-top: 3px solid #3498db; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 768px) { #image-resizer-tool-container { padding: 15px 20px; } #image-resizer-tool-container .main-content { flex-direction: column; gap: 20px; } #image-resizer-tool-container .preview-section, #image-resizer-tool-container .controls-section, #image-resizer-tool-container .adjustments-section { flex: none; width: 100%; min-width: unset; } #image-resizer-tool-container .adjustments-section h3 { margin-top: 25px; } #image-resizer-tool-container h1 { font-size: 1.7em; } #image-resizer-tool-container h2, #image-resizer-tool-container h3 { font-size: 1.25em; } #image-resizer-tool-container .control-group input[type="number"] { max-width: 100px; } #image-resizer-tool-container .adjustment-group { grid-template-columns: auto 1fr auto; gap: 5px 10px; } #image-resizer-tool-container .adjustment-group label { grid-row: 1; grid-column: 1; min-width: 60px; } #image-resizer-tool-container .adjustment-group input[type="range"] { grid-row: 1; grid-column: 2; } #image-resizer-tool-container .adjustment-group .value-display { grid-row: 1; grid-column: 3; justify-self: end; padding-left: 5px; } #image-resizer-tool-container .transform-buttons button { font-size: 0.85em; padding: 7px 8px; } }
+        @media (max-width: 480px) { #image-resizer-tool-container { padding: 10px 15px; } #image-resizer-tool-container h1 { font-size: 1.5em; } #image-resizer-tool-container h2, #image-resizer-tool-container h3 { font-size: 1.15em; } #image-resizer-tool-container .upload-section { padding: 15px; } #image-resizer-tool-container .upload-button { padding: 10px 20px; font-size: 1em; } #image-resizer-tool-container .transform-buttons { gap: 5px; } #image-resizer-tool-container .transform-buttons button { min-width: 65px; font-size: 0.8em; padding: 6px; } #image-resizer-tool-container .dimension-inputs { flex-direction: column; gap: 10px; } #image-resizer-tool-container .dimension-inputs > div { min-width: unset; } #image-resizer-tool-container .border-controls { flex-direction: column; align-items: flex-start; gap: 8px; } #image-resizer-tool-container .border-controls input { max-width: 100px !important; } #image-resizer-tool-container .control-group.inline-group { gap: 5px 10px; } #image-resizer-tool-container .adjustment-group .value-display { font-size: 0.85em; } #image-resizer-tool-container .apply-btn, #image-resizer-tool-container .download-btn, #image-resizer-tool-container .reset-btn { font-size: 1em; padding: 10px 15px; } #image-resizer-tool-container .status-container { font-size: 0.9em; } }
 
-        #image-resizer-tool-container .spinner { /* NEW: Spinner styles */
-            border: 3px solid #f0f0f0; /* Lighter grey */
-            border-top: 3px solid #3498db; /* Blue */
-            border-radius: 50%;
-            width: 16px; /* Slightly smaller */
-            height: 16px;
-            animation: spin 1s linear infinite;
-            display: inline-block; /* Keep display:none in HTML initially */
-            margin-left: 8px; /* Space between text and spinner */
-            vertical-align: middle; /* Align nicely with text */
-        }
-
-        @keyframes spin { /* NEW: Spinner animation */
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-
-        /* --- Responsive Adjustments --- */
-        @media (max-width: 768px) {
-            #image-resizer-tool-container .main-content { flex-direction: column; gap: 20px; }
-            #image-resizer-tool-container { padding: 15px; }
-            #image-resizer-tool-container h1 { font-size: 1.8em; }
-            #image-resizer-tool-container h2, #image-resizer-tool-container h3 { font-size: 1.3em; }
-            /* Keep action buttons stacked */
-            #image-resizer-tool-container .control-group input[type="number"] { max-width: 100px; }
-            #image-resizer-tool-container .adjustment-group { grid-template-columns: auto 1fr; }
-            #image-resizer-tool-container .adjustment-group .value-display { grid-column: 2 / 3; justify-self: end; }
-        }
-        @media (max-width: 480px) {
-             #image-resizer-tool-container .transform-buttons { gap: 5px; }
-             #image-resizer-tool-container .transform-buttons button { min-width: 70px; font-size: 0.8em; padding: 6px 8px; }
-             #image-resizer-tool-container .dimension-inputs { flex-direction: column; gap: 10px; }
-             #image-resizer-tool-container .border-controls { flex-direction: column; align-items: flex-start; gap: 8px; }
-             #image-resizer-tool-container .border-controls input { max-width: 100px !important; }
-             #image-resizer-tool-container .control-group.inline-group { gap: 5px 10px; }
-        }
     </style>
 </head>
 <body>
-
-    <!-- Main Tool Container with Unique ID -->
     <div id="image-resizer-tool-container">
         <h1>Advanced Image Editor</h1>
-
-        <div class="upload-section">
-            <label for="imageInput" class="upload-button">Upload Image</label>
-            <input type="file" id="imageInput" accept="image/*">
-             <p id="fileName" class="file-name-display">No file selected</p>
-        </div>
-
-        <!-- Initially hidden content area -->
+        <div class="upload-section no-image"> <label for="imageInput" class="upload-button">Upload Image</label> <input type="file" id="imageInput" accept="image/*"> <p id="fileName" class="file-name-display">No file selected</p> </div>
         <div class="main-content" id="mainContent" style="display: none;">
+            <div class="preview-section"> <h2>Preview</h2> <canvas id="previewCanvas"></canvas> <p class="dimensions-info">Original: <span id="originalDimensions">N/A</span></p> <p class="dimensions-info">Output (Approx): <span id="outputDimensions">N/A</span></p> </div>
+            <div class="adjustments-section"> <h3>Adjustments <button id="resetAdjustmentsBtn" class="reset-adjustments-btn" title="Reset Adjustments">Reset Filters</button> </h3> <div class="adjustment-controls"> <div class="control-group adjustment-group"> <label for="brightnessSlider">Bright:</label> <input type="range" id="brightnessSlider" min="0" max="200" value="100" step="1"> <span class="value-display" id="brightnessValue">100%</span> </div> <div class="control-group adjustment-group"> <label for="contrastSlider">Contrast:</label> <input type="range" id="contrastSlider" min="0" max="200" value="100" step="1"> <span class="value-display" id="contrastValue">100%</span> </div> <div class="control-group adjustment-group"> <label for="saturationSlider">Saturate:</label> <input type="range" id="saturationSlider" min="0" max="200" value="100" step="1"> <span class="value-display" id="saturationValue">100%</span> </div> <div class="control-group adjustment-group"> <label for="grayscaleSlider">Grayscale:</label> <input type="range" id="grayscaleSlider" min="0" max="100" value="0" step="1"> <span class="value-display" id="grayscaleValue">0%</span> </div> </div> </div>
+            <div class="controls-section"> <h2>Options</h2> <h3>Resize & Transform</h3> <div class="control-group dimension-inputs"> <div> <label for="widthInput">Width (px):</label> <input type="number" id="widthInput" min="1"> </div> <div> <label for="heightInput">Height (px):</label> <input type="number" id="heightInput" min="1"> </div> </div> <div class="control-group aspect-ratio-group"> <input type="checkbox" id="aspectRatioLock" checked> <label for="aspectRatioLock">Lock Aspect Ratio</label> </div> <div class="control-group"> <label>Transform:</label> <div class="transform-buttons"> <button id="rotateLeftBtn" title="Rotate 90° Left">↶ Left</button> <button id="rotateRightBtn" title="Rotate 90° Right">↷ Right</button> <button id="flipHorizontalBtn" title="Flip Horizontal">↔ Flip H</button> <button id="flipVerticalBtn" title="Flip Vertical">↕ Flip V</button> </div> </div> <h3>Border</h3> <div class="control-group border-controls"> <label for="borderWidthInput">Width:</label> <input type="number" id="borderWidthInput" min="0" value="0"> <label for="borderColorInput">Color:</label> <input type="color" id="borderColorInput" value="#000000"> </div> <h3>Output</h3> <div class="control-group quality-group" id="qualityControlGroup"> <label for="qualitySlider">Quality (<span id="qualityValue">0.92</span>):</label> <input type="range" id="qualitySlider" min="0.1" max="1" step="0.01" value="0.92"> </div> <div class="control-group inline-group"> <label for="formatSelect">Format:</label> <select id="formatSelect"> <option value="image/jpeg">JPEG</option> <option value="image/png">PNG</option> <option value="image/webp">WebP</option> </select> <div id="backgroundColorGroup" style="display: flex; align-items:center; gap: 5px;"> <label for="bgColorInput">BG:</label> <input type="color" id="bgColorInput" value="#FFFFFF"> </div> </div> <div class="control-group output-size-group"> <p><span class="size-label" id="sizeLabel">Estimated Size:</span> <strong id="outputSize">N/A</strong></p> </div> <div class="action-buttons"> <button id="applyResizeButton" class="apply-btn" disabled>Apply Changes & Get Size</button> <button id="downloadButton" class="download-btn" disabled>Download Image</button> <button id="resetButton" class="reset-btn" disabled>Reset All</button> </div> </div>
+        </div>
+        <div class="status-container"> <div id="statusMessage" class="status-message"></div> <div id="loadingSpinner" class="spinner" style="display: none;"></div> </div>
+    </div>
 
-             <!-- Preview Section -->
-            <div class="preview-section">
-                <h2>Preview</h2>
-                <canvas id="previewCanvas"></canvas>
-                <p class="dimensions-info">Original: <span id="originalDimensions">N/A</span></p>
-                <p class="dimensions-info">Output (Approx): <span id="outputDimensions">N/A</span></p>
-            </div>
-
-             <!-- Controls Section -->
-            <div class="controls-section">
-                <h2>Options</h2>
-
-                <!-- Dimensions -->
-                 <h3>Resize & Transform</h3>
-                 <div class="control-group dimension-inputs">
-                     <div> <label for="widthInput">Width (px):</label> <input type="number" id="widthInput" min="1"> </div>
-                     <div> <label for="heightInput">Height (px):</label> <input type="number" id="heightInput" min="1"> </div>
-                </div>
-                <div class="control-group aspect-ratio-group">
-                     <input type="checkbox" id="aspectRatioLock" checked> <label for="aspectRatioLock">Lock Aspect Ratio</label>
-                 </div>
-                 <div class="control-group">
-                     <label>Transform:</label>
-                     <div class="transform-buttons">
-                         <button id="rotateLeftBtn" title="Rotate 90° Left">↶ Left</button>
-                         <button id="rotateRightBtn" title="Rotate 90° Right">↷ Right</button>
-                         <button id="flipHorizontalBtn" title="Flip Horizontal">↔ Flip H</button>
-                         <button id="flipVerticalBtn" title="Flip Vertical">↕ Flip V</button>
-                     </div>
-                 </div>
-
-                 <!-- Border Controls -->
-                 <h3>Border</h3>
-                 <div class="control-group border-controls">
-                     <label for="borderWidthInput">Width:</label> <input type="number" id="borderWidthInput" min="0" value="0">
-                     <label for="borderColorInput">Color:</label> <input type="color" id="borderColorInput" value="#000000">
-                 </div>
-
-                <!-- Adjustments -->
-                 <h3>Adjustments <button id="resetAdjustmentsBtn" class="reset-adjustments-btn" title="Reset Adjustments">Reset Filters</button> </h3>
-                 <div class="adjustment-controls">
-                     <div class="control-group adjustment-group">
-                         <label for="brightnessSlider">Bright:</label> <input type="range" id="brightnessSlider" min="0" max="200" value="100" step="1"> <span class="value-display" id="brightnessValue">100%</span>
-                     </div>
-                     <div class="control-group adjustment-group">
-                         <label for="contrastSlider">Contrast:</label> <input type="range" id="contrastSlider" min="0" max="200" value="100" step="1"> <span class="value-display" id="contrastValue">100%</span>
-                     </div>
-                     <div class="control-group adjustment-group">
-                         <label for="saturationSlider">Saturate:</label> <input type="range" id="saturationSlider" min="0" max="200" value="100" step="1"> <span class="value-display" id="saturationValue">100%</span>
-                     </div>
-                     <div class="control-group adjustment-group">
-                         <label for="grayscaleSlider">Grayscale:</label> <input type="range" id="grayscaleSlider" min="0" max="100" value="0" step="1"> <span class="value-display" id="grayscaleValue">0%</span>
-                     </div>
-                 </div>
-
-                <!-- Output Settings -->
-                 <h3>Output</h3>
-                 <div class="control-group quality-group" id="qualityControlGroup">
-                    <label for="qualitySlider">Quality (<span id="qualityValue">0.92</span>):</label> <input type="range" id="qualitySlider" min="0.1" max="1" step="0.01" value="0.92">
-                </div>
-                 <div class="control-group inline-group">
-                    <label for="formatSelect">Format:</label> <select id="formatSelect"> <option value="image/jpeg">JPEG</option> <option value="image/png">PNG</option> <option value="image/webp">WebP</option> </select>
-                    <div id="backgroundColorGroup" style="display: flex; align-items:center; gap: 5px;"> <label for="bgColorInput">BG:</label> <input type="color" id="bgColorInput" value="#FFFFFF"> </div>
-                </div>
-                 <div class="control-group output-size-group">
-                     <p><span class="size-label" id="sizeLabel">Estimated Size:</span> <strong id="outputSize">N/A</strong></p>
-                 </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                     <button id="applyResizeButton" class="apply-btn" disabled>Apply Changes & Get Size</button>
-                     <button id="downloadButton" class="download-btn" disabled>Download Image</button>
-                     <button id="resetButton" class="reset-btn" disabled>Reset All</button>
-                 </div>
-
-            </div> <!-- End controls-section -->
-        </div> <!-- End main-content -->
-
-         <!-- Status Message and Spinner Container -->
-         <div class="status-container">
-             <div id="statusMessage" class="status-message"></div>
-             <div id="loadingSpinner" class="spinner" style="display: none;"></div> <!-- Spinner Added Here -->
-         </div>
-
-    </div> <!-- End #image-resizer-tool-container -->
-
-    <!-- JavaScript embedded within <script> tags -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Elements ---
-            const container = document.getElementById('image-resizer-tool-container');
-            if (!container) { console.error("Container #image-resizer-tool-container not found!"); return; } // Added check
+            // --- DOM Element Selection (No changes) ---
+            const container = document.getElementById('image-resizer-tool-container'); if (!container) { console.error("Container not found!"); return; }
+            const imageInput = container.querySelector('#imageInput'); const uploadSection = container.querySelector('.upload-section'); const mainContent = container.querySelector('#mainContent'); const statusMessage = container.querySelector('#statusMessage'); const loadingSpinner = container.querySelector('#loadingSpinner'); const previewSection = container.querySelector('.preview-section');
+            if (!imageInput || !uploadSection || !mainContent || !statusMessage || !loadingSpinner || !previewSection) { console.error("Essential elements missing."); return; }
+            const fileNameDisplay = container.querySelector('#fileName'); const previewCanvas = container.querySelector('#previewCanvas'); const ctx = previewCanvas.getContext('2d'); const originalDimensionsDisplay = container.querySelector('#originalDimensions'); const outputDimensionsDisplay = container.querySelector('#outputDimensions'); const widthInput = container.querySelector('#widthInput'); const heightInput = container.querySelector('#heightInput'); const aspectRatioLock = container.querySelector('#aspectRatioLock'); const qualityControlGroup = container.querySelector('#qualityControlGroup'); const qualitySlider = container.querySelector('#qualitySlider'); const qualityValueDisplay = container.querySelector('#qualityValue'); const formatSelect = container.querySelector('#formatSelect'); const backgroundColorGroup = container.querySelector('#backgroundColorGroup'); const bgColorInput = container.querySelector('#bgColorInput'); const outputSizeDisplay = container.querySelector('#outputSize'); const sizeLabel = container.querySelector('#sizeLabel'); const applyResizeButton = container.querySelector('#applyResizeButton'); const downloadButton = container.querySelector('#downloadButton'); const resetButton = container.querySelector('#resetButton'); const rotateLeftBtn = container.querySelector('#rotateLeftBtn'); const rotateRightBtn = container.querySelector('#rotateRightBtn'); const flipHorizontalBtn = container.querySelector('#flipHorizontalBtn'); const flipVerticalBtn = container.querySelector('#flipVerticalBtn'); const borderWidthInput = container.querySelector('#borderWidthInput'); const borderColorInput = container.querySelector('#borderColorInput'); const brightnessSlider = container.querySelector('#brightnessSlider'); const contrastSlider = container.querySelector('#contrastSlider'); const saturationSlider = container.querySelector('#saturationSlider'); const grayscaleSlider = container.querySelector('#grayscaleSlider'); const brightnessValue = container.querySelector('#brightnessValue'); const contrastValue = container.querySelector('#contrastValue'); const saturationValue = container.querySelector('#saturationValue'); const grayscaleValue = container.querySelector('#grayscaleValue'); const resetAdjustmentsBtn = container.querySelector('#resetAdjustmentsBtn');
 
-            // Check for essential elements early
-            const imageInput = container.querySelector('#imageInput');
-            const mainContent = container.querySelector('#mainContent');
-            const statusMessage = container.querySelector('#statusMessage');
-            const loadingSpinner = container.querySelector('#loadingSpinner'); // Get spinner
+            // --- State Variables (No changes) ---
+            let originalImage = null; let originalWidth = 0, originalHeight = 0; let currentWidth = 0, currentHeight = 0; let displayWidth = 0, displayHeight = 0; let currentFormat = 'image/jpeg'; let currentQuality = 0.92; let currentRotation = 0; let flipState = { horizontal: false, vertical: false }; let currentBgColor = '#FFFFFF'; let borderWidth = 0; let borderColor = '#000000'; let adjustments = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 }; let aspectRatio = 1; let debounceTimer, adjustmentDebounceTimer; let isProcessing = false; let finalImageBlob = null; let settingsChangedSinceApply = true;
 
-            if (!imageInput || !mainContent || !statusMessage || !loadingSpinner) {
-                console.error("One or more essential elements (imageInput, mainContent, statusMessage, loadingSpinner) not found within the container.");
-                return; // Stop if essential elements are missing
-            }
+            // --- Default Values (No changes) ---
+            const defaultAdjustments = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 }; const defaultBorderWidth = 0; const defaultBorderColor = '#000000';
 
-            const fileNameDisplay = container.querySelector('#fileName');
-            const previewCanvas = container.querySelector('#previewCanvas');
-            const ctx = previewCanvas.getContext('2d');
-            const originalDimensionsDisplay = container.querySelector('#originalDimensions');
-            const outputDimensionsDisplay = container.querySelector('#outputDimensions');
-            const widthInput = container.querySelector('#widthInput');
-            const heightInput = container.querySelector('#heightInput');
-            const aspectRatioLock = container.querySelector('#aspectRatioLock');
-            const qualityControlGroup = container.querySelector('#qualityControlGroup');
-            const qualitySlider = container.querySelector('#qualitySlider');
-            const qualityValueDisplay = container.querySelector('#qualityValue');
-            const formatSelect = container.querySelector('#formatSelect');
-            const backgroundColorGroup = container.querySelector('#backgroundColorGroup');
-            const bgColorInput = container.querySelector('#bgColorInput');
-            const outputSizeDisplay = container.querySelector('#outputSize');
-            const sizeLabel = container.querySelector('#sizeLabel');
-            const applyResizeButton = container.querySelector('#applyResizeButton');
-            const downloadButton = container.querySelector('#downloadButton');
-            const resetButton = container.querySelector('#resetButton');
-            const rotateLeftBtn = container.querySelector('#rotateLeftBtn');
-            const rotateRightBtn = container.querySelector('#rotateRightBtn');
-            const flipHorizontalBtn = container.querySelector('#flipHorizontalBtn');
-            const flipVerticalBtn = container.querySelector('#flipVerticalBtn');
-            const borderWidthInput = container.querySelector('#borderWidthInput');
-            const borderColorInput = container.querySelector('#borderColorInput');
-            const brightnessSlider = container.querySelector('#brightnessSlider');
-            const contrastSlider = container.querySelector('#contrastSlider');
-            const saturationSlider = container.querySelector('#saturationSlider');
-            const grayscaleSlider = container.querySelector('#grayscaleSlider');
-            const brightnessValue = container.querySelector('#brightnessValue');
-            const contrastValue = container.querySelector('#contrastValue');
-            const saturationValue = container.querySelector('#saturationValue');
-            const grayscaleValue = container.querySelector('#grayscaleValue');
-            const resetAdjustmentsBtn = container.querySelector('#resetAdjustmentsBtn');
-
-            // --- State Variables ---
-            let originalImage = null;
-            let originalWidth = 0, originalHeight = 0;
-            let currentWidth = 0, currentHeight = 0;
-            let displayWidth = 0, displayHeight = 0;
-            let currentFormat = 'image/jpeg';
-            let currentQuality = 0.92;
-            let currentRotation = 0;
-            let flipState = { horizontal: false, vertical: false };
-            let currentBgColor = '#FFFFFF';
-            let borderWidth = 0;
-            let borderColor = '#000000';
-            let adjustments = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
-            let aspectRatio = 1;
-            let debounceTimer, adjustmentDebounceTimer;
-            let isProcessing = false;
-            let finalImageBlob = null;
-            let settingsChangedSinceApply = true;
-
-            // --- Default Values ---
-            const defaultAdjustments = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
-            const defaultBorderWidth = 0;
-            const defaultBorderColor = '#000000';
-
-            // --- Event Listeners ---
-            container.querySelector('.upload-button').addEventListener('click', () => imageInput.click());
-            container.querySelector('.upload-section').addEventListener('click', (e) => {
-                 // Allow clicks on label/button inside, otherwise trigger input
-                 if (!e.target.closest('input') && !e.target.closest('button') && !e.target.closest('label')) {
-                     imageInput.click();
-                 }
-            });
-
+            // --- Event Listeners (No changes) ---
             imageInput.addEventListener('change', handleImageUpload);
-            widthInput.addEventListener('input', () => { settingsChangedFlag(true); handleDimensionChange('width'); });
-            heightInput.addEventListener('input', () => { settingsChangedFlag(true); handleDimensionChange('height'); });
-            aspectRatioLock.addEventListener('change', () => { settingsChangedFlag(true); handleDimensionChange('lock'); });
-            qualitySlider.addEventListener('input', () => { settingsChangedFlag(true); handleQualityChange(); });
-            formatSelect.addEventListener('change', () => { settingsChangedFlag(true); handleFormatChange(); });
-            bgColorInput.addEventListener('input', () => { settingsChangedFlag(true); handleBackgroundColorChange(); });
-            borderWidthInput.addEventListener('input', () => { settingsChangedFlag(true); handleBorderChange(); });
-            borderColorInput.addEventListener('input', () => { settingsChangedFlag(true); handleBorderChange(); });
-            brightnessSlider.addEventListener('input', () => { settingsChangedFlag(true); handleAdjustmentChange('brightness', brightnessSlider.value, brightnessValue); });
-            contrastSlider.addEventListener('input', () => { settingsChangedFlag(true); handleAdjustmentChange('contrast', contrastSlider.value, contrastValue); });
-            saturationSlider.addEventListener('input', () => { settingsChangedFlag(true); handleAdjustmentChange('saturation', saturationSlider.value, saturationValue); });
-            grayscaleSlider.addEventListener('input', () => { settingsChangedFlag(true); handleAdjustmentChange('grayscale', grayscaleSlider.value, grayscaleValue); });
-            rotateLeftBtn.addEventListener('click', () => { settingsChangedFlag(true); handleRotate(-90); });
-            rotateRightBtn.addEventListener('click', () => { settingsChangedFlag(true); handleRotate(90); });
-            flipHorizontalBtn.addEventListener('click', () => { settingsChangedFlag(true); handleFlip('horizontal'); });
-            flipVerticalBtn.addEventListener('click', () => { settingsChangedFlag(true); handleFlip('vertical'); });
+            widthInput.addEventListener('input', () => { processSettingChange(handleDimensionChange, 'width'); }); heightInput.addEventListener('input', () => { processSettingChange(handleDimensionChange, 'height'); }); aspectRatioLock.addEventListener('change', () => { processSettingChange(handleDimensionChange, 'lock'); }); qualitySlider.addEventListener('input', () => { processSettingChange(handleQualityChange); }); formatSelect.addEventListener('change', () => { processSettingChange(handleFormatChange); }); bgColorInput.addEventListener('input', () => { processSettingChange(handleBackgroundColorChange); }); borderWidthInput.addEventListener('input', () => { processSettingChange(handleBorderChange); }); borderColorInput.addEventListener('input', () => { processSettingChange(handleBorderChange); }); brightnessSlider.addEventListener('input', () => { processSettingChange(handleAdjustmentChange, 'brightness', brightnessSlider.value, brightnessValue); }); contrastSlider.addEventListener('input', () => { processSettingChange(handleAdjustmentChange, 'contrast', contrastSlider.value, contrastValue); }); saturationSlider.addEventListener('input', () => { processSettingChange(handleAdjustmentChange, 'saturation', saturationSlider.value, saturationValue); }); grayscaleSlider.addEventListener('input', () => { processSettingChange(handleAdjustmentChange, 'grayscale', grayscaleSlider.value, grayscaleValue); }); rotateLeftBtn.addEventListener('click', () => { processSettingChange(handleRotate, -90); }); rotateRightBtn.addEventListener('click', () => { processSettingChange(handleRotate, 90); }); flipHorizontalBtn.addEventListener('click', () => { processSettingChange(handleFlip, 'horizontal'); }); flipVerticalBtn.addEventListener('click', () => { processSettingChange(handleFlip, 'vertical'); }); resetAdjustmentsBtn.addEventListener('click', () => { processSettingChange(resetAdjustments); });
+            applyResizeButton.addEventListener('click', handleApplyChanges); downloadButton.addEventListener('click', handleDownload); resetButton.addEventListener('click', handleReset);
 
-            resetAdjustmentsBtn.addEventListener('click', () => { settingsChangedFlag(true); resetAdjustments(); });
-            applyResizeButton.addEventListener('click', handleApplyChanges);
-            downloadButton.addEventListener('click', handleDownload);
-            resetButton.addEventListener('click', handleReset);
+            // --- NEW: Wrapper for setting change processing ---
+            function processSettingChange(callbackFn, ...args) {
+                if (!originalImage || isProcessing) return; // Don't process if no image or already processing
 
+                // 1. Mark settings as changed
+                settingsChangedSinceApply = true;
+                finalImageBlob = null;
+                downloadButton.disabled = true; // Disable download immediately
+                applyResizeButton.disabled = false; // Enable apply immediately
+                sizeLabel.textContent = 'Estimated Size:'; // Show estimate label
 
-            // --- Settings Change Tracker ---
-            function settingsChangedFlag(changed) {
-                if (changed) {
-                    settingsChangedSinceApply = true;
-                    finalImageBlob = null;
-                    downloadButton.disabled = true;
-                    applyResizeButton.disabled = !originalImage; // Enable Apply if image exists and processing allows
-                    sizeLabel.textContent = 'Estimated Size:';
-                    if(originalImage) estimateOutputSize();
-                }
+                // 2. Call the actual setting change handler function
+                callbackFn(...args);
+
+                 // 3. Estimate size (usually handled within specific handlers like quality/dimensions)
+                 // We can call estimateOutputSize here as well if needed after any change
+                 // estimateOutputSize();
             }
 
-            // --- Debounced Input Handling ---
-            // (No changes needed in these handlers)
+
+            // --- Debounced Input Handling (Handlers only, no state change) ---
             function handleDimensionChange(source) { clearTimeout(debounceTimer); debounceTimer = setTimeout(() => { dimensionChangeLogic(source); }, 300); }
             function handleQualityChange() { currentQuality = parseFloat(qualitySlider.value); qualityValueDisplay.textContent = currentQuality.toFixed(2); if (currentFormat !== 'image/png') { clearTimeout(debounceTimer); debounceTimer = setTimeout(estimateOutputSize, 150); } }
-            function handleFormatChange() { currentFormat = formatSelect.value; qualityControlGroup.style.display = currentFormat === 'image/png' ? 'none' : 'block'; backgroundColorGroup.style.display = currentFormat === 'image/png' ? 'none' : 'flex'; updatePreview(); }
-            function handleBackgroundColorChange() { currentBgColor = bgColorInput.value; if (currentFormat !== 'image/png') updatePreview(); }
-            function handleBorderChange() { const newWidth = parseInt(borderWidthInput.value, 10); borderWidth = isNaN(newWidth) || newWidth < 0 ? 0 : newWidth; borderColor = borderColorInput.value; if (borderWidthInput.value !== borderWidth.toString()) borderWidthInput.value = borderWidth; updatePreview(); }
-            function handleAdjustmentChange(filterType, value, valueDisplayElement) { adjustments[filterType] = parseInt(value, 10); valueDisplayElement.textContent = `${value}%`; clearTimeout(adjustmentDebounceTimer); adjustmentDebounceTimer = setTimeout(updatePreview, 50); }
-            function handleRotate(angle) { if (!originalImage || isProcessing) return; currentRotation = (currentRotation + angle + 360) % 360; if (aspectRatioLock.checked && (angle === 90 || angle === -90)) { const tempW = widthInput.value; widthInput.value = heightInput.value; heightInput.value = tempW; dimensionChangeLogic('width'); } else { updatePreview(); } }
-            function handleFlip(axis) { if (!originalImage || isProcessing) return; flipState[axis] = !flipState[axis]; updatePreview(); }
+            function handleFormatChange() { currentFormat = formatSelect.value; qualityControlGroup.style.display = currentFormat === 'image/png' ? 'none' : 'block'; backgroundColorGroup.style.display = currentFormat === 'image/png' ? 'none' : 'flex'; updatePreview(); estimateOutputSize(); /* Also estimate on format change */ }
+            function handleBackgroundColorChange() { currentBgColor = bgColorInput.value; if (currentFormat !== 'image/png') updatePreview(); /* No size change usually */}
+            function handleBorderChange() { const newWidth = parseInt(borderWidthInput.value, 10); borderWidth = isNaN(newWidth) || newWidth < 0 ? 0 : newWidth; borderColor = borderColorInput.value; if (borderWidthInput.value !== borderWidth.toString()) borderWidthInput.value = borderWidth; updatePreview(); estimateOutputSize(); /* Border affects size */ }
+            function handleAdjustmentChange(filterType, value, valueDisplayElement) { adjustments[filterType] = parseInt(value, 10); valueDisplayElement.textContent = `${value}%`; clearTimeout(adjustmentDebounceTimer); adjustmentDebounceTimer = setTimeout(updatePreview, 50); /* Filters don't affect size estimate much */ }
+            function handleRotate(angle) { currentRotation = (currentRotation + angle + 360) % 360; if (aspectRatioLock.checked && (angle === 90 || angle === -90)) { const tempW = widthInput.value; widthInput.value = heightInput.value; heightInput.value = tempW; dimensionChangeLogic('width'); } else { updatePreview(); estimateOutputSize(); /* Rotation affects dimensions display/size */ } }
+            function handleFlip(axis) { flipState[axis] = !flipState[axis]; updatePreview(); /* Flip doesn't change size */ }
+            function resetAdjustments() { adjustments = { ...defaultAdjustments }; brightnessSlider.value = adjustments.brightness; contrastSlider.value = adjustments.contrast; saturationSlider.value = adjustments.saturation; grayscaleSlider.value = adjustments.grayscale; brightnessValue.textContent = `${adjustments.brightness}%`; contrastValue.textContent = `${adjustments.contrast}%`; saturationValue.textContent = `${adjustments.saturation}%`; grayscaleValue.textContent = `${adjustments.grayscale}%`; updatePreview(); }
 
-            function dimensionChangeLogic(source) {
-                if (!originalImage || isProcessing) return;
-                let targetWidth = parseInt(widthInput.value, 10);
-                let targetHeight = parseInt(heightInput.value, 10);
-                if (isNaN(targetWidth) || targetWidth <= 0) targetWidth = currentWidth || 1;
-                if (isNaN(targetHeight) || targetHeight <= 0) targetHeight = currentHeight || 1;
-
-                if (aspectRatioLock.checked) {
-                    const isSideways = currentRotation === 90 || currentRotation === 270;
-                    const effOrigW = isSideways ? originalHeight : originalWidth;
-                    const effOrigH = isSideways ? originalWidth : originalHeight;
-                    aspectRatio = effOrigW > 0 && effOrigH > 0 ? effOrigW / effOrigH : 1;
-
-                    if (source === 'width' || (source === 'lock' && targetWidth !== currentWidth)) {
-                        targetHeight = Math.max(1, Math.round(targetWidth / aspectRatio));
-                        heightInput.value = targetHeight;
-                    } else if (source === 'height' || (source === 'lock' && targetHeight !== currentHeight)) {
-                        targetWidth = Math.max(1, Math.round(targetHeight * aspectRatio));
-                        widthInput.value = targetWidth;
-                    } else {
-                        targetHeight = Math.max(1, Math.round(targetWidth / aspectRatio));
-                        heightInput.value = targetHeight;
-                    }
-                }
-                currentWidth = Math.max(1, targetWidth);
-                currentHeight = Math.max(1, targetHeight);
-                if (widthInput.value !== currentWidth.toString()) widthInput.value = currentWidth;
-                if (heightInput.value !== currentHeight.toString()) heightInput.value = currentHeight;
-
-                updatePreview();
-            }
+            // --- Dimension Logic (No changes) ---
+            function dimensionChangeLogic(source) { if (!originalImage || isProcessing) return; let targetWidth = parseInt(widthInput.value, 10); let targetHeight = parseInt(heightInput.value, 10); if (isNaN(targetWidth) || targetWidth <= 0) targetWidth = currentWidth || 1; if (isNaN(targetHeight) || targetHeight <= 0) targetHeight = currentHeight || 1; if (aspectRatioLock.checked) { const isSideways = currentRotation === 90 || currentRotation === 270; const effOrigW = isSideways ? originalHeight : originalWidth; const effOrigH = isSideways ? originalWidth : originalHeight; aspectRatio = effOrigW > 0 && effOrigH > 0 ? effOrigW / effOrigH : 1; if (source === 'width' || (source === 'lock' && targetWidth !== currentWidth)) { targetHeight = Math.max(1, Math.round(targetWidth / aspectRatio)); heightInput.value = targetHeight; } else if (source === 'height' || (source === 'lock' && targetHeight !== currentHeight)) { targetWidth = Math.max(1, Math.round(targetHeight * aspectRatio)); widthInput.value = targetWidth; } else { targetHeight = Math.max(1, Math.round(targetWidth / aspectRatio)); heightInput.value = targetHeight; } } currentWidth = Math.max(1, targetWidth); currentHeight = Math.max(1, targetHeight); if (widthInput.value !== currentWidth.toString()) widthInput.value = currentWidth; if (heightInput.value !== currentHeight.toString()) heightInput.value = currentHeight; updatePreview(); estimateOutputSize(); /* Estimate size on dimension change */ }
 
             // --- Core Functions ---
             function handleImageUpload(event) {
                 const file = event.target.files[0];
-                console.log("File selected:", file?.name); // Log file selection
-                resetState(false); // Clear previous state but keep file input value
-                clearStatus();
-
-                if (!file) {
-                    console.log("No file selected or selection cancelled.");
-                    // No error message needed if user just cancelled
-                    resetState(true); // Reset fully if no file
-                    return;
-                }
-                 if (!file.type.startsWith('image/')) {
-                    showError('Please select a valid image file.');
-                    console.error("Invalid file type selected:", file.type);
-                    resetState(true); // Reset fully on invalid type
-                    return;
-                }
+                console.log("HandleImageUpload triggered for file:", file?.name);
+                resetState(false); clearStatus();
+                if (!file) { console.log("No file selected."); resetState(true); return; }
+                 if (!file.type.startsWith('image/')) { showError('Please select a valid image file.'); resetState(true); return; }
 
                 fileNameDisplay.textContent = file.name.length > 35 ? file.name.substring(0, 32) + '...' : file.name;
                 setProcessing(true, "Loading image...");
+                uploadSection.classList.remove('no-image');
 
                 const reader = new FileReader();
-
                 reader.onload = (e) => {
-                    console.log("FileReader onload triggered.");
-                    originalImage = new Image();
-
-                    originalImage.onload = () => {
-                        console.log("Original image onload triggered.");
-                        if (originalImage.naturalWidth === 0 || originalImage.naturalHeight === 0) {
-                             console.error("Image loaded but naturalWidth or naturalHeight is zero. Possible corrupt image or browser issue.");
-                             showError('Could not load image data (zero dimensions).');
-                             resetState(true);
-                             setProcessing(false);
-                             return;
+                    console.log("FileReader onload.");
+                    const img = new Image();
+                    img.onload = () => {
+                        console.log("Actual Image onload.");
+                        if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                             showError('Could not load image data.'); resetState(true); setProcessing(false); return;
                         }
-
-                        originalWidth = originalImage.naturalWidth; originalHeight = originalImage.naturalHeight;
-                        aspectRatio = originalWidth / originalHeight;
+                        originalImage = img; // Set the actual image object
+                        originalWidth = img.naturalWidth; originalHeight = img.naturalHeight; aspectRatio = originalWidth / originalHeight;
                         originalDimensionsDisplay.textContent = `${originalWidth} x ${originalHeight}px`;
-                        resetTransformationsAndSettings();
+                        resetTransformationsAndSettings(); // Reset controls to defaults
                         currentWidth = originalWidth; currentHeight = originalHeight;
                         widthInput.value = currentWidth; heightInput.value = currentHeight;
+                        mainContent.style.display = 'flex';
 
-                        mainContent.style.display = 'flex'; // Make sure controls are visible
-                        console.log("Main content display set to flex.");
-
-                        applyResizeButton.disabled = false; // Enable Apply button
-                        resetButton.disabled = false;
-                        settingsChangedFlag(true); // Mark settings as 'changed' initially
-
-                        updatePreview(); // Update canvas preview
-                        setProcessing(false); // Finish processing state
-                         showSuccess("Image loaded successfully.");
-                         setTimeout(clearStatus, 2500);
-                         console.log("Image processing complete.");
+                        // Set initial state after load
+                        settingsChangedSinceApply = true; // Start as "changed"
+                        finalImageBlob = null;
+                        updatePreview();
+                        estimateOutputSize();
+                        setProcessing(false); // This will correctly set button states
+                        showSuccess("Image loaded."); setTimeout(clearStatus, 2500);
                     };
-
-                    originalImage.onerror = (err) => {
-                        console.error('Error loading image data into Image object:', err);
-                        showError('Could not load image data. The file might be corrupt or unsupported.');
-                        resetState(true);
-                        setProcessing(false);
-                    };
-
-                    console.log("Setting image src to Data URL.");
-                    originalImage.src = e.target.result;
+                    img.onerror = (err) => { showError('Could not load image data.'); resetState(true); setProcessing(false); };
+                    img.src = e.target.result;
                 };
-
-                reader.onerror = (err) => {
-                    console.error('Error reading file with FileReader:', err);
-                    showError('Error reading the selected file.');
-                    resetState(true);
-                    setProcessing(false);
-                };
-
-                console.log("Reading file as Data URL.");
+                reader.onerror = (err) => { showError('Error reading file.'); resetState(true); setProcessing(false); };
                 reader.readAsDataURL(file);
             }
+            function updatePreview() { /* (No changes needed) */ if (!originalImage || currentWidth <= 0 || currentHeight <= 0) { ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height); outputDimensionsDisplay.textContent = 'N/A'; return; } const isSideways = currentRotation === 90 || currentRotation === 270; displayWidth = isSideways ? currentHeight : currentWidth; displayHeight = isSideways ? currentWidth : currentHeight; const previewPadding = 2; const availableWidth = previewSection.clientWidth > previewPadding ? previewSection.clientWidth - previewPadding : 300; let previewScale = 1; if (displayWidth > availableWidth) { previewScale = availableWidth / displayWidth; } let scaledHeight = displayHeight * previewScale; const maxHeight = window.innerHeight * 0.6; if (scaledHeight > maxHeight) { previewScale = maxHeight / displayHeight; } const canvasWidth = Math.max(1, Math.round(displayWidth * previewScale)); const canvasHeight = Math.max(1, Math.round(displayHeight * previewScale)); if (previewCanvas.width !== canvasWidth || previewCanvas.height !== canvasHeight) { previewCanvas.width = canvasWidth; previewCanvas.height = canvasHeight; } ctx.clearRect(0, 0, canvasWidth, canvasHeight); if (currentFormat !== 'image/png') { ctx.fillStyle = currentBgColor; ctx.fillRect(0, 0, canvasWidth, canvasHeight); } const filterString = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) grayscale(${adjustments.grayscale}%)`; ctx.filter = filterString; ctx.save(); ctx.translate(canvasWidth / 2, canvasHeight / 2); ctx.rotate(currentRotation * Math.PI / 180); ctx.scale(flipState.horizontal ? -1 : 1, flipState.vertical ? -1 : 1); const sourceDrawWidth = isSideways ? currentHeight : currentWidth; const sourceDrawHeight = isSideways ? currentWidth : currentHeight; try { ctx.drawImage( originalImage, -Math.round(sourceDrawWidth * previewScale / 2), -Math.round(sourceDrawHeight * previewScale / 2), Math.round(sourceDrawWidth * previewScale), Math.round(sourceDrawHeight * previewScale) ); } catch (e) { console.error("Preview drawImage error:", e); showError("Preview render error."); } ctx.filter = 'none'; ctx.restore(); if (borderWidth > 0) { const previewBorderWidth = Math.max(1, Math.round(borderWidth * previewScale)); ctx.strokeStyle = borderColor; ctx.lineWidth = previewBorderWidth; ctx.strokeRect( previewBorderWidth / 2, previewBorderWidth / 2, canvasWidth - previewBorderWidth, canvasHeight - previewBorderWidth ); } outputDimensionsDisplay.textContent = `${currentWidth} x ${currentHeight}px (${(previewScale * 100).toFixed(0)}% preview)`; /* Estimate called elsewhere */ }
 
-            function updatePreview() {
-                if (!originalImage || currentWidth <= 0 || currentHeight <= 0) {
-                    ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-                    outputDimensionsDisplay.textContent = 'N/A';
-                    if (settingsChangedSinceApply) estimateOutputSize();
-                    return;
-                }
-                 const isSideways = currentRotation === 90 || currentRotation === 270;
-                 displayWidth = isSideways ? currentHeight : currentWidth;
-                 displayHeight = isSideways ? currentWidth : currentHeight;
-                 const maxPreviewDim = Math.min(600, container.querySelector('.preview-section').clientWidth - 30); // Dynamic max width
-                 let previewScale = 1;
-                 if (displayWidth > maxPreviewDim || displayHeight > maxPreviewDim) {
-                     previewScale = Math.min(maxPreviewDim / displayWidth, maxPreviewDim / displayHeight);
-                 }
-                 const canvasWidth = Math.max(1, Math.round(displayWidth * previewScale));
-                 const canvasHeight = Math.max(1, Math.round(displayHeight * previewScale));
-                 previewCanvas.width = canvasWidth; previewCanvas.height = canvasHeight;
-                 ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-                 if (currentFormat !== 'image/png') { ctx.fillStyle = currentBgColor; ctx.fillRect(0, 0, canvasWidth, canvasHeight); }
-
-                 const filterString = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) grayscale(${adjustments.grayscale}%)`;
-                 ctx.filter = filterString;
-
-                 ctx.save();
-                 ctx.translate(canvasWidth / 2, canvasHeight / 2);
-                 ctx.rotate(currentRotation * Math.PI / 180);
-                 ctx.scale(flipState.horizontal ? -1 : 1, flipState.vertical ? -1 : 1);
-                 const sourceDrawWidth = isSideways ? currentHeight : currentWidth;
-                 const sourceDrawHeight = isSideways ? currentWidth : currentHeight;
-                 try {
-                    ctx.drawImage( originalImage, -Math.round(sourceDrawWidth * previewScale / 2), -Math.round(sourceDrawHeight * previewScale / 2), Math.round(sourceDrawWidth * previewScale), Math.round(sourceDrawHeight * previewScale) );
-                 } catch (e) { console.error("Preview drawImage error:", e); showError("Preview render error."); }
-                 ctx.filter = 'none';
-                 ctx.restore();
-
-                 if (borderWidth > 0) {
-                     const previewBorderWidth = Math.max(1, Math.round(borderWidth * previewScale));
-                     ctx.strokeStyle = borderColor; ctx.lineWidth = previewBorderWidth;
-                     ctx.strokeRect( previewBorderWidth / 2, previewBorderWidth / 2, canvasWidth - previewBorderWidth, canvasHeight - previewBorderWidth );
-                 }
-
-                outputDimensionsDisplay.textContent = `${currentWidth} x ${currentHeight}px (${(previewScale * 100).toFixed(0)}% preview)`;
-                if (settingsChangedSinceApply) estimateOutputSize();
-            }
-
-            // --- New Function: Apply Changes & Generate Blob ---
             async function handleApplyChanges() {
-                 if (!originalImage || currentWidth <= 0 || currentHeight <= 0 || isProcessing) {
-                    showError("Cannot apply changes - invalid state."); return;
-                }
+                 if (!originalImage || currentWidth <= 0 || currentHeight <= 0 || isProcessing || !settingsChangedSinceApply) {
+                     // Don't run if no image, invalid dims, already processing, or no changes to apply
+                      if (settingsChangedSinceApply === false) {
+                         showError("No changes to apply."); // Inform user
+                         setTimeout(clearStatus, 2000);
+                     }
+                     return;
+                 }
                 setProcessing(true, "Applying changes...");
+                // Clear blob immediately
                 finalImageBlob = null;
-                downloadButton.disabled = true;
-                applyResizeButton.disabled = true;
 
-                // Use setTimeout to allow UI update (spinner) before heavy processing
-                setTimeout(() => {
+                setTimeout(() => { // Allow UI update
                     try {
-                        const tempCanvas = document.createElement('canvas');
-                        const tempCtx = tempCanvas.getContext('2d');
-                        const isSideways = currentRotation === 90 || currentRotation === 270;
-                        // Use currentWidth/Height for the image content itself
-                        const imageContentWidth = currentWidth;
-                        const imageContentHeight = currentHeight;
-                        // The canvas needs to accommodate rotation correctly
-                        const finalCanvasWidth = isSideways ? imageContentHeight : imageContentWidth;
-                        const finalCanvasHeight = isSideways ? imageContentWidth : imageContentHeight;
-                        // Total dimensions including border
-                        const totalWidth = finalCanvasWidth + (borderWidth * 2);
-                        const totalHeight = finalCanvasHeight + (borderWidth * 2);
+                        // ... (Canvas drawing logic remains the same)
+                        const tempCanvas = document.createElement('canvas'); const tempCtx = tempCanvas.getContext('2d'); const isSideways = currentRotation === 90 || currentRotation === 270; const imageContentWidth = currentWidth; const imageContentHeight = currentHeight; const finalCanvasWidth = isSideways ? imageContentHeight : imageContentWidth; const finalCanvasHeight = isSideways ? imageContentWidth : imageContentHeight; const totalWidth = finalCanvasWidth + (borderWidth * 2); const totalHeight = finalCanvasHeight + (borderWidth * 2); if (totalWidth <= 0 || totalHeight <= 0) throw new Error("Invalid final dimensions."); tempCanvas.width = totalWidth; tempCanvas.height = totalHeight; if (borderWidth > 0) { tempCtx.fillStyle = borderColor; tempCtx.fillRect(0, 0, totalWidth, totalHeight); } if (currentFormat !== 'image/png') { tempCtx.fillStyle = currentBgColor; tempCtx.fillRect(borderWidth, borderWidth, finalCanvasWidth, finalCanvasHeight); } const filterString = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) grayscale(${adjustments.grayscale}%)`; tempCtx.filter = filterString; tempCtx.save(); tempCtx.translate(borderWidth + finalCanvasWidth / 2, borderWidth + finalCanvasHeight / 2); tempCtx.rotate(currentRotation * Math.PI / 180); tempCtx.scale(flipState.horizontal ? -1 : 1, flipState.vertical ? -1 : 1); tempCtx.drawImage(originalImage, -imageContentWidth / 2, -imageContentHeight / 2, imageContentWidth, imageContentHeight); tempCtx.restore(); tempCtx.filter = 'none';
 
-                        if (totalWidth <= 0 || totalHeight <= 0) throw new Error("Invalid final dimensions.");
-                        tempCanvas.width = totalWidth; tempCanvas.height = totalHeight;
-
-                        // 1. Fill *entire canvas* with Border Color
-                        if (borderWidth > 0) {
-                            tempCtx.fillStyle = borderColor;
-                            tempCtx.fillRect(0, 0, totalWidth, totalHeight);
-                        }
-                        // 2. Fill *inner rectangle* with Background Color (if not PNG and border exists OR if no border)
-                        if (currentFormat !== 'image/png') {
-                            tempCtx.fillStyle = currentBgColor;
-                            tempCtx.fillRect(borderWidth, borderWidth, finalCanvasWidth, finalCanvasHeight); // Fill only the inner area
-                        }
-                        // 3. Apply Filters
-                        const filterString = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) grayscale(${adjustments.grayscale}%)`;
-                        tempCtx.filter = filterString;
-                        // 4. Apply Transformations & Draw Image
-                        tempCtx.save();
-                        // Translate to the center of the *inner* content area
-                        tempCtx.translate(borderWidth + finalCanvasWidth / 2, borderWidth + finalCanvasHeight / 2);
-                        tempCtx.rotate(currentRotation * Math.PI / 180);
-                        tempCtx.scale(flipState.horizontal ? -1 : 1, flipState.vertical ? -1 : 1);
-                        // Draw the image centered, using its original orientation dimensions before rotation
-                        tempCtx.drawImage(originalImage, -imageContentWidth / 2, -imageContentHeight / 2, imageContentWidth, imageContentHeight);
-                        tempCtx.restore(); // Restore context (removes transforms and filters)
-                        tempCtx.filter = 'none'; // Explicitly reset filter
-
-                        // 5. Generate Blob & Update UI
                         tempCanvas.toBlob((blob) => {
-                            if (!blob) {
-                                console.error("Canvas toBlob failed to generate blob.");
-                                showError("Failed to generate image blob.");
-                                setProcessing(false);
-                                // Re-enable apply only if an image is still loaded
-                                applyResizeButton.disabled = !originalImage;
-                                return;
-                            }
+                            if (!blob) { showError("Failed to generate image blob."); setProcessing(false); return; }
 
-                            finalImageBlob = blob;
-                            settingsChangedSinceApply = false;
+                            finalImageBlob = blob; // Store the generated blob
+                            settingsChangedSinceApply = false; // *** Mark settings as applied ***
 
                             outputSizeDisplay.textContent = formatBytes(blob.size);
                             sizeLabel.textContent = 'Actual Size:';
-                            downloadButton.disabled = false; // Enable download
-                            applyResizeButton.disabled = true; // Keep Apply disabled until settings change again
-                            setProcessing(false);
-                            showSuccess("Changes applied. Ready to download.");
-                            setTimeout(clearStatus, 3000);
+                            setProcessing(false); // *** Update button states correctly ***
+                            showSuccess("Changes applied. Ready to download."); setTimeout(clearStatus, 3000);
 
                         }, currentFormat, currentQuality);
-
-                    } catch (error) {
-                        console.error("Error applying changes:", error);
-                        showError(`Apply failed: ${error.message}`);
-                        setProcessing(false);
-                        applyResizeButton.disabled = !originalImage; // Re-enable apply on error
-                    }
-                }, 50); // Small delay for UI to show spinner
+                    } catch (error) { console.error("Error applying changes:", error); showError(`Apply failed: ${error.message}`); setProcessing(false); }
+                }, 50);
             }
 
-
-            // --- Modified Download Function ---
-            function handleDownload() {
-                 if (!finalImageBlob || isProcessing) {
-                    showError("Please click 'Apply Changes' first to generate the final image.");
-                    if (!finalImageBlob) applyResizeButton.disabled = !originalImage; // Re-enable Apply if blob is missing
-                    return;
-                }
-                setProcessing(true, "Preparing download...");
-
-                try {
-                     const url = URL.createObjectURL(finalImageBlob);
-                     const link = document.createElement('a');
-                     const fileExtension = getFileExtension(currentFormat);
-                     const baseFileName = (imageInput.files[0]?.name.substring(0, imageInput.files[0].name.lastIndexOf('.'))) || 'edited_image';
-                     link.href = url;
-                     link.download = `${baseFileName}_${currentWidth}x${currentHeight}.${fileExtension}`;
-                     document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                     URL.revokeObjectURL(url);
-
-                     setProcessing(false);
-                     showSuccess("Image downloaded!");
-                     setTimeout(clearStatus, 3000);
-
-                 } catch (error) {
-                      console.error("Error during download:", error);
-                      showError(`Download failed: ${error.message}`);
-                      setProcessing(false);
-                 }
-            }
-
-             function estimateOutputSize() {
-                 if (!previewCanvas || previewCanvas.width <= 0 || previewCanvas.height <= 0 || !originalImage) { outputSizeDisplay.textContent = 'N/A'; return; }
-                 try {
-                     if (settingsChangedSinceApply) {
-                         const dataUrl = previewCanvas.toDataURL(currentFormat, currentQuality);
-                         const head = `data:${currentFormat};base64,`;
-                         if (dataUrl.length > head.length) {
-                            const base64Data = dataUrl.substring(head.length);
-                            const padding = (base64Data.endsWith('==')) ? 2 : (base64Data.endsWith('=')) ? 1 : 0;
-                            const fileSizeInBytes = (base64Data.length * 0.75) - padding;
-                            outputSizeDisplay.textContent = `~ ${formatBytes(fileSizeInBytes)}`;
-                         } else { outputSizeDisplay.textContent = 'N/A'; }
-                          sizeLabel.textContent = 'Estimated Size:';
-                     }
-                 } catch (error) { console.warn("Size estimation error:", error); outputSizeDisplay.textContent = 'Estimate N/A'; } // Use warn, less critical
-             }
+            function handleDownload() { /* (No changes needed) */ if (!finalImageBlob || isProcessing) { showError("Apply changes first to generate image for download."); return; } setProcessing(true, "Preparing download..."); try { const url = URL.createObjectURL(finalImageBlob); const link = document.createElement('a'); const fileExtension = getFileExtension(currentFormat); const baseFileName = (imageInput.files[0]?.name.substring(0, imageInput.files[0].name.lastIndexOf('.'))) || 'edited_image'; link.href = url; link.download = `${baseFileName}_${currentWidth}x${currentHeight}.${fileExtension}`; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); setProcessing(false); showSuccess("Image downloaded!"); setTimeout(clearStatus, 3000); } catch (error) { console.error("Error during download:", error); showError(`Download failed: ${error.message}`); setProcessing(false); } }
+            function estimateOutputSize() { /* (No changes needed) */ if (!previewCanvas || previewCanvas.width <= 0 || previewCanvas.height <= 0 || !originalImage) { outputSizeDisplay.textContent = 'N/A'; return; } try { if (settingsChangedSinceApply) { const dataUrl = previewCanvas.toDataURL(currentFormat, currentQuality); const head = `data:${currentFormat};base64,`; if (dataUrl.length > head.length) { const base64Data = dataUrl.substring(head.length); const padding = (base64Data.endsWith('==')) ? 2 : (base64Data.endsWith('=')) ? 1 : 0; const fileSizeInBytes = (base64Data.length * 0.75) - padding; outputSizeDisplay.textContent = `~ ${formatBytes(fileSizeInBytes)}`; } else { outputSizeDisplay.textContent = 'N/A'; } sizeLabel.textContent = 'Estimated Size:'; } } catch (error) { console.warn("Size estimation error:", error); outputSizeDisplay.textContent = 'Estimate N/A'; } }
 
             // --- Utility Functions ---
+             // --- setProcessing (Simplified & Corrected) ---
              function setProcessing(processing, message = "") {
+                 console.log(`setProcessing: ${processing}, msg: ${message}, hasImage: ${!!originalImage}, changed: ${settingsChangedSinceApply}, hasBlob: ${!!finalImageBlob}`); // Debug log
                  isProcessing = processing;
-                 statusMessage.className = 'status-message'; // Reset classes first
-                 statusMessage.textContent = message || ''; // Set text content
-                 loadingSpinner.style.display = processing ? 'inline-block' : 'none'; // Show/hide spinner
+                 statusMessage.className = 'status-message'; statusMessage.textContent = message || ''; loadingSpinner.style.display = processing ? 'inline-block' : 'none';
 
-                 // Disable all interactive elements during processing
-                 const controlsToDisable = [ imageInput, widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn, resetButton, applyResizeButton, downloadButton ];
-                 controlsToDisable.forEach(el => { if(el) el.disabled = processing; });
-                 // Special handling for labels linked to disabled inputs if needed (usually browsers handle this)
-                 container.querySelector('.upload-button').style.pointerEvents = processing ? 'none' : '';
-                 container.querySelector('.upload-button').style.opacity = processing ? '0.6' : '1';
+                 const hasImage = originalImage !== null;
+
+                 // Manage ALL controls based on processing state first
+                 const allControls = [ imageInput, widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn, resetButton, applyResizeButton, downloadButton, container.querySelector('.upload-button') ];
+                 allControls.forEach(el => { if(el) el.disabled = processing; }); // Disable all if processing
+
+                 const uploadButton = container.querySelector('.upload-button');
+                 if (uploadButton) {
+                      uploadButton.style.pointerEvents = processing ? 'none' : '';
+                      uploadButton.style.opacity = processing ? '0.6' : '1';
+                 }
 
 
+                 // If NOT processing, set specific disabled states based on logic
+                 if (!processing) {
+                     imageInput.disabled = false; // Always enable image input
+                     resetButton.disabled = !hasImage; // Enable reset if image exists
+
+                      // Enable other inputs ONLY if image exists
+                     const otherInputs = [ widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn ];
+                     otherInputs.forEach(el => { if(el) el.disabled = !hasImage; });
+
+                     // Apply Button: Needs image AND settings must have changed
+                     applyResizeButton.disabled = !hasImage || !settingsChangedSinceApply;
+
+                     // Download Button: Needs image AND settings must NOT have changed AND blob must exist
+                     downloadButton.disabled = !hasImage || settingsChangedSinceApply || !finalImageBlob;
+                 }
+
+                 // Set status message style only if processing and message exists
                  if (processing && message) {
                      statusMessage.classList.add('info');
-                 } else if (!processing) {
-                      // Re-enable controls based on state AFTER processing is false
-                      if (originalImage) {
-                          const inputControls = [widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn, resetButton ];
-                          inputControls.forEach(el => { if (el) el.disabled = false; });
-                          imageInput.disabled = false; // Re-enable upload input
-
-                          // Button states depend on whether changes are applied
-                          applyResizeButton.disabled = !settingsChangedSinceApply;
-                          downloadButton.disabled = settingsChangedSinceApply || !finalImageBlob;
-                          resetButton.disabled = false;
-                      } else {
-                          // If no image, most things remain disabled
-                          resetButton.disabled = true;
-                          applyResizeButton.disabled = true;
-                          downloadButton.disabled = true;
-                          imageInput.disabled = false; // Keep upload enabled
-                      }
-                      // Ensure upload button style is reset
-                       container.querySelector('.upload-button').style.pointerEvents = '';
-                       container.querySelector('.upload-button').style.opacity = '1';
                  }
              }
-             function formatBytes(bytes, decimals = 2) { if (!+bytes) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`; }
-             function getFileExtension(mimeType) { const typeMap = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/bmp': 'bmp' }; return typeMap[mimeType] || 'jpg'; }
-             function showError(message) { clearStatus(); statusMessage.textContent = message; statusMessage.className = 'status-message error'; }
-             function showSuccess(message) { clearStatus(); statusMessage.textContent = message; statusMessage.className = 'status-message success'; }
-             function clearStatus() { statusMessage.textContent = ''; statusMessage.className = 'status-message'; loadingSpinner.style.display = 'none'; } // Hide spinner too
 
-             function resetAdjustments() { adjustments = { ...defaultAdjustments }; brightnessSlider.value = adjustments.brightness; contrastSlider.value = adjustments.contrast; saturationSlider.value = adjustments.saturation; grayscaleSlider.value = adjustments.grayscale; brightnessValue.textContent = `${adjustments.brightness}%`; contrastValue.textContent = `${adjustments.contrast}%`; saturationValue.textContent = `${adjustments.saturation}%`; grayscaleValue.textContent = `${adjustments.grayscale}%`; updatePreview(); }
-             function resetTransformationsAndSettings() { currentRotation = 0; flipState = { horizontal: false, vertical: false }; currentBgColor = '#FFFFFF'; currentFormat = 'image/jpeg'; currentQuality = 0.92; borderWidth = defaultBorderWidth; borderColor = defaultBorderColor; aspectRatioLock.checked = true; formatSelect.value = currentFormat; qualitySlider.value = currentQuality; qualityValueDisplay.textContent = currentQuality.toFixed(2); bgColorInput.value = currentBgColor; borderWidthInput.value = borderWidth; borderColorInput.value = borderColor; qualityControlGroup.style.display = 'block'; backgroundColorGroup.style.display = 'flex'; resetAdjustments(); }
-             function handleReset() { resetState(true); }
+            // --- (Other utilities: formatBytes, getFileExtension, showError, showSuccess, clearStatus - No changes) ---
+            function formatBytes(bytes, decimals = 2) { if (!+bytes) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`; }
+            function getFileExtension(mimeType) { const typeMap = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/bmp': 'bmp' }; return typeMap[mimeType] || 'jpg'; }
+            function showError(message) { clearStatus(); statusMessage.textContent = message; statusMessage.className = 'status-message error'; }
+            function showSuccess(message) { clearStatus(); statusMessage.textContent = message; statusMessage.className = 'status-message success'; }
+            function clearStatus() { statusMessage.textContent = ''; statusMessage.className = 'status-message'; loadingSpinner.style.display = 'none'; }
+            function resetTransformationsAndSettings() { currentRotation = 0; flipState = { horizontal: false, vertical: false }; currentBgColor = '#FFFFFF'; currentFormat = 'image/jpeg'; currentQuality = 0.92; borderWidth = defaultBorderWidth; borderColor = defaultBorderColor; aspectRatioLock.checked = true; formatSelect.value = currentFormat; qualitySlider.value = currentQuality; qualityValueDisplay.textContent = currentQuality.toFixed(2); bgColorInput.value = currentBgColor; borderWidthInput.value = borderWidth; borderColorInput.value = borderColor; qualityControlGroup.style.display = 'block'; backgroundColorGroup.style.display = 'flex'; resetAdjustments(); }
+            function handleReset() { resetState(true); }
+            function resetState(hardReset = true) { /* (No changes needed) */ console.log(`Resetting state (hardReset: ${hardReset})`); originalImage = null; originalWidth = 0; originalHeight = 0; currentWidth = 0; currentHeight = 0; aspectRatio = 1; finalImageBlob = null; settingsChangedSinceApply = true; uploadSection.classList.add('no-image'); resetTransformationsAndSettings(); if (ctx) ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height); if (previewCanvas) { previewCanvas.width = 1; previewCanvas.height = 1;} originalDimensionsDisplay.textContent = 'N/A'; outputDimensionsDisplay.textContent = 'N/A'; widthInput.value = ''; heightInput.value = ''; outputSizeDisplay.textContent = 'N/A'; sizeLabel.textContent = 'Estimated Size:'; fileNameDisplay.textContent = 'No file selected'; mainContent.style.display = 'none'; clearStatus(); setProcessing(false); if (hardReset) { try { imageInput.value = ''; } catch(e) { console.warn("Could not reset file input value:", e); } } }
 
-            function resetState(hardReset = true) {
-                console.log(`Resetting state (hardReset: ${hardReset})`);
-                originalImage = null; originalWidth = 0; originalHeight = 0; currentWidth = 0; currentHeight = 0; aspectRatio = 1; finalImageBlob = null; settingsChangedSinceApply = true;
-                resetTransformationsAndSettings();
-                ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height); previewCanvas.width = 1; previewCanvas.height = 1; // Reset canvas size
-                originalDimensionsDisplay.textContent = 'N/A'; outputDimensionsDisplay.textContent = 'N/A';
-                widthInput.value = ''; heightInput.value = '';
-                outputSizeDisplay.textContent = 'N/A'; sizeLabel.textContent = 'Estimated Size:';
-                fileNameDisplay.textContent = 'No file selected';
-                mainContent.style.display = 'none'; // Hide controls
-                applyResizeButton.disabled = true; downloadButton.disabled = true; resetButton.disabled = true;
-                clearStatus();
-                setProcessing(false); // Ensure processing state is false and controls are appropriately enabled/disabled (upload should be enabled)
-                 if (hardReset) {
-                    try { imageInput.value = ''; } catch(e) { console.warn("Could not reset file input value:", e); } // Clear file input selection
-                 }
-            }
-
-            // Initial setup: Ensure main content is hidden
-            mainContent.style.display = 'none';
-            resetButton.disabled = true;
-            applyResizeButton.disabled = true;
-            downloadButton.disabled = true;
-
+            // --- Initial setup ---
+            resetState(false);
 
         }); // End DOMContentLoaded
     </script>
