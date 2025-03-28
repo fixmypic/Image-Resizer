@@ -77,8 +77,12 @@
             border-color: #80bdff; outline: 0; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
         #image-resizer-tool-container .control-group input[type="range"] { padding: 0; cursor: pointer; height: 8px; background-color: #e9ecef; -webkit-appearance: none; appearance: none; border-radius: 4px; }
-        #image-resizer-tool-container .control-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; }
-        #image-resizer-tool-container .control-group input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; border: none; }
+        #image-resizer-tool-container .control-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; transition: background-color 0.15s ease; /* Added transition */ }
+        #image-resizer-tool-container .control-group input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: #3498db; border-radius: 50%; cursor: pointer; border: none; transition: background-color 0.15s ease; /* Added transition */ }
+        /* --- HOVER EFFECT FOR RANGE THUMBS --- */
+        #image-resizer-tool-container .control-group input[type="range"]::-webkit-slider-thumb:hover { background-color: #2980b9; }
+        #image-resizer-tool-container .control-group input[type="range"]::-moz-range-thumb:hover { background-color: #2980b9; }
+
 
         /* Specific group styles */
         #image-resizer-tool-container .dimension-inputs { display: flex; gap: 15px; }
@@ -143,11 +147,42 @@
 
          #image-resizer-tool-container .action-buttons button:active { transform: translateY(0px); }
 
-        /* --- Status Message --- */
-        #image-resizer-tool-container .status-message { margin-top: 20px; font-weight: 500; min-height: 1.3em; text-align: center; padding: 8px 10px; border-radius: 4px; }
+        /* --- Status Message & Loading Spinner --- */
+        #image-resizer-tool-container .status-container { /* Added container */
+            margin-top: 20px;
+            min-height: 1.3em;
+            text-align: center;
+            display: flex; /* Use flex to align text and spinner */
+            align-items: center;
+            justify-content: center;
+        }
+        #image-resizer-tool-container .status-message {
+            /* Removed margin-top, min-height, text-align */
+             padding: 8px 10px;
+             border-radius: 4px;
+             display: inline; /* Allow it to sit next to spinner */
+        }
         #image-resizer-tool-container .status-message.error { color: #c0392b; background-color: #f9d5d5; }
         #image-resizer-tool-container .status-message.info { color: #2980b9; background-color: #d5eaf9; }
         #image-resizer-tool-container .status-message.success { color: #27ae60; background-color: #d5f9e3; }
+
+        #image-resizer-tool-container .spinner { /* NEW: Spinner styles */
+            border: 3px solid #f0f0f0; /* Lighter grey */
+            border-top: 3px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 16px; /* Slightly smaller */
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block; /* Keep display:none in HTML initially */
+            margin-left: 8px; /* Space between text and spinner */
+            vertical-align: middle; /* Align nicely with text */
+        }
+
+        @keyframes spin { /* NEW: Spinner animation */
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
 
         /* --- Responsive Adjustments --- */
         @media (max-width: 768px) {
@@ -263,7 +298,11 @@
             </div> <!-- End controls-section -->
         </div> <!-- End main-content -->
 
-         <div id="statusMessage" class="status-message"></div>
+         <!-- Status Message and Spinner Container -->
+         <div class="status-container">
+             <div id="statusMessage" class="status-message"></div>
+             <div id="loadingSpinner" class="spinner" style="display: none;"></div> <!-- Spinner Added Here -->
+         </div>
 
     </div> <!-- End #image-resizer-tool-container -->
 
@@ -272,11 +311,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elements ---
             const container = document.getElementById('image-resizer-tool-container');
-            if (!container) { console.error("Container not found!"); return; }
+            if (!container) { console.error("Container #image-resizer-tool-container not found!"); return; } // Added check
 
+            // Check for essential elements early
             const imageInput = container.querySelector('#imageInput');
-            const fileNameDisplay = container.querySelector('#fileName');
             const mainContent = container.querySelector('#mainContent');
+            const statusMessage = container.querySelector('#statusMessage');
+            const loadingSpinner = container.querySelector('#loadingSpinner'); // Get spinner
+
+            if (!imageInput || !mainContent || !statusMessage || !loadingSpinner) {
+                console.error("One or more essential elements (imageInput, mainContent, statusMessage, loadingSpinner) not found within the container.");
+                return; // Stop if essential elements are missing
+            }
+
+            const fileNameDisplay = container.querySelector('#fileName');
             const previewCanvas = container.querySelector('#previewCanvas');
             const ctx = previewCanvas.getContext('2d');
             const originalDimensionsDisplay = container.querySelector('#originalDimensions');
@@ -291,10 +339,9 @@
             const backgroundColorGroup = container.querySelector('#backgroundColorGroup');
             const bgColorInput = container.querySelector('#bgColorInput');
             const outputSizeDisplay = container.querySelector('#outputSize');
-            const sizeLabel = container.querySelector('#sizeLabel'); // Label for size type
-            const applyResizeButton = container.querySelector('#applyResizeButton'); // New Button
+            const sizeLabel = container.querySelector('#sizeLabel');
+            const applyResizeButton = container.querySelector('#applyResizeButton');
             const downloadButton = container.querySelector('#downloadButton');
-            const statusMessage = container.querySelector('#statusMessage');
             const resetButton = container.querySelector('#resetButton');
             const rotateLeftBtn = container.querySelector('#rotateLeftBtn');
             const rotateRightBtn = container.querySelector('#rotateRightBtn');
@@ -328,8 +375,8 @@
             let aspectRatio = 1;
             let debounceTimer, adjustmentDebounceTimer;
             let isProcessing = false;
-            let finalImageBlob = null; // Store the blob generated by Apply Changes
-            let settingsChangedSinceApply = true; // Track if settings changed after last apply
+            let finalImageBlob = null;
+            let settingsChangedSinceApply = true;
 
             // --- Default Values ---
             const defaultAdjustments = { brightness: 100, contrast: 100, saturation: 100, grayscale: 0 };
@@ -339,11 +386,13 @@
             // --- Event Listeners ---
             container.querySelector('.upload-button').addEventListener('click', () => imageInput.click());
             container.querySelector('.upload-section').addEventListener('click', (e) => {
-                if (!e.target.closest('input') && !e.target.closest('button') && !e.target.closest('label')) imageInput.click();
+                 // Allow clicks on label/button inside, otherwise trigger input
+                 if (!e.target.closest('input') && !e.target.closest('button') && !e.target.closest('label')) {
+                     imageInput.click();
+                 }
             });
 
             imageInput.addEventListener('change', handleImageUpload);
-            // Add settingsChangedFlag(true) to all input handlers
             widthInput.addEventListener('input', () => { settingsChangedFlag(true); handleDimensionChange('width'); });
             heightInput.addEventListener('input', () => { settingsChangedFlag(true); handleDimensionChange('height'); });
             aspectRatioLock.addEventListener('change', () => { settingsChangedFlag(true); handleDimensionChange('lock'); });
@@ -362,7 +411,7 @@
             flipVerticalBtn.addEventListener('click', () => { settingsChangedFlag(true); handleFlip('vertical'); });
 
             resetAdjustmentsBtn.addEventListener('click', () => { settingsChangedFlag(true); resetAdjustments(); });
-            applyResizeButton.addEventListener('click', handleApplyChanges); // Listener for new button
+            applyResizeButton.addEventListener('click', handleApplyChanges);
             downloadButton.addEventListener('click', handleDownload);
             resetButton.addEventListener('click', handleReset);
 
@@ -371,15 +420,16 @@
             function settingsChangedFlag(changed) {
                 if (changed) {
                     settingsChangedSinceApply = true;
-                    finalImageBlob = null; // Invalidate stored blob
-                    downloadButton.disabled = true; // Disable download until Apply is clicked again
-                    applyResizeButton.disabled = !originalImage; // Enable Apply if image exists
-                    sizeLabel.textContent = 'Estimated Size:'; // Revert label
-                    if(originalImage) estimateOutputSize(); // Show estimate again
+                    finalImageBlob = null;
+                    downloadButton.disabled = true;
+                    applyResizeButton.disabled = !originalImage; // Enable Apply if image exists and processing allows
+                    sizeLabel.textContent = 'Estimated Size:';
+                    if(originalImage) estimateOutputSize();
                 }
             }
 
             // --- Debounced Input Handling ---
+            // (No changes needed in these handlers)
             function handleDimensionChange(source) { clearTimeout(debounceTimer); debounceTimer = setTimeout(() => { dimensionChangeLogic(source); }, 300); }
             function handleQualityChange() { currentQuality = parseFloat(qualitySlider.value); qualityValueDisplay.textContent = currentQuality.toFixed(2); if (currentFormat !== 'image/png') { clearTimeout(debounceTimer); debounceTimer = setTimeout(estimateOutputSize, 150); } }
             function handleFormatChange() { currentFormat = formatSelect.value; qualityControlGroup.style.display = currentFormat === 'image/png' ? 'none' : 'block'; backgroundColorGroup.style.display = currentFormat === 'image/png' ? 'none' : 'flex'; updatePreview(); }
@@ -389,12 +439,12 @@
             function handleRotate(angle) { if (!originalImage || isProcessing) return; currentRotation = (currentRotation + angle + 360) % 360; if (aspectRatioLock.checked && (angle === 90 || angle === -90)) { const tempW = widthInput.value; widthInput.value = heightInput.value; heightInput.value = tempW; dimensionChangeLogic('width'); } else { updatePreview(); } }
             function handleFlip(axis) { if (!originalImage || isProcessing) return; flipState[axis] = !flipState[axis]; updatePreview(); }
 
-            function dimensionChangeLogic(source) { // Extracted logic for reuse
+            function dimensionChangeLogic(source) {
                 if (!originalImage || isProcessing) return;
                 let targetWidth = parseInt(widthInput.value, 10);
                 let targetHeight = parseInt(heightInput.value, 10);
-                if (isNaN(targetWidth) || targetWidth <= 0) targetWidth = currentWidth || 1; // Default to 1 if currentWidth is 0
-                if (isNaN(targetHeight) || targetHeight <= 0) targetHeight = currentHeight || 1; // Default to 1 if currentHeight is 0
+                if (isNaN(targetWidth) || targetWidth <= 0) targetWidth = currentWidth || 1;
+                if (isNaN(targetHeight) || targetHeight <= 0) targetHeight = currentHeight || 1;
 
                 if (aspectRatioLock.checked) {
                     const isSideways = currentRotation === 90 || currentRotation === 270;
@@ -403,19 +453,18 @@
                     aspectRatio = effOrigW > 0 && effOrigH > 0 ? effOrigW / effOrigH : 1;
 
                     if (source === 'width' || (source === 'lock' && targetWidth !== currentWidth)) {
-                        targetHeight = Math.max(1, Math.round(targetWidth / aspectRatio)); // Ensure min 1px
+                        targetHeight = Math.max(1, Math.round(targetWidth / aspectRatio));
                         heightInput.value = targetHeight;
                     } else if (source === 'height' || (source === 'lock' && targetHeight !== currentHeight)) {
-                        targetWidth = Math.max(1, Math.round(targetHeight * aspectRatio)); // Ensure min 1px
+                        targetWidth = Math.max(1, Math.round(targetHeight * aspectRatio));
                         widthInput.value = targetWidth;
-                    } else { // Fallback
+                    } else {
                         targetHeight = Math.max(1, Math.round(targetWidth / aspectRatio));
                         heightInput.value = targetHeight;
                     }
                 }
-                currentWidth = Math.max(1, targetWidth); // Ensure min 1px stored
-                currentHeight = Math.max(1, targetHeight); // Ensure min 1px stored
-                // Ensure inputs reflect the sanitized values
+                currentWidth = Math.max(1, targetWidth);
+                currentHeight = Math.max(1, targetHeight);
                 if (widthInput.value !== currentWidth.toString()) widthInput.value = currentWidth;
                 if (heightInput.value !== currentHeight.toString()) heightInput.value = currentHeight;
 
@@ -425,46 +474,96 @@
             // --- Core Functions ---
             function handleImageUpload(event) {
                 const file = event.target.files[0];
-                resetState(false); clearStatus();
-                if (!file || !file.type.startsWith('image/')) { showError('Please select a valid image file.'); resetState(true); return; }
+                console.log("File selected:", file?.name); // Log file selection
+                resetState(false); // Clear previous state but keep file input value
+                clearStatus();
+
+                if (!file) {
+                    console.log("No file selected or selection cancelled.");
+                    // No error message needed if user just cancelled
+                    resetState(true); // Reset fully if no file
+                    return;
+                }
+                 if (!file.type.startsWith('image/')) {
+                    showError('Please select a valid image file.');
+                    console.error("Invalid file type selected:", file.type);
+                    resetState(true); // Reset fully on invalid type
+                    return;
+                }
+
                 fileNameDisplay.textContent = file.name.length > 35 ? file.name.substring(0, 32) + '...' : file.name;
                 setProcessing(true, "Loading image...");
+
                 const reader = new FileReader();
+
                 reader.onload = (e) => {
+                    console.log("FileReader onload triggered.");
                     originalImage = new Image();
+
                     originalImage.onload = () => {
+                        console.log("Original image onload triggered.");
+                        if (originalImage.naturalWidth === 0 || originalImage.naturalHeight === 0) {
+                             console.error("Image loaded but naturalWidth or naturalHeight is zero. Possible corrupt image or browser issue.");
+                             showError('Could not load image data (zero dimensions).');
+                             resetState(true);
+                             setProcessing(false);
+                             return;
+                        }
+
                         originalWidth = originalImage.naturalWidth; originalHeight = originalImage.naturalHeight;
                         aspectRatio = originalWidth / originalHeight;
                         originalDimensionsDisplay.textContent = `${originalWidth} x ${originalHeight}px`;
                         resetTransformationsAndSettings();
                         currentWidth = originalWidth; currentHeight = originalHeight;
                         widthInput.value = currentWidth; heightInput.value = currentHeight;
-                        mainContent.style.display = 'flex';
+
+                        mainContent.style.display = 'flex'; // Make sure controls are visible
+                        console.log("Main content display set to flex.");
+
                         applyResizeButton.disabled = false; // Enable Apply button
                         resetButton.disabled = false;
                         settingsChangedFlag(true); // Mark settings as 'changed' initially
-                        updatePreview();
+
+                        updatePreview(); // Update canvas preview
+                        setProcessing(false); // Finish processing state
+                         showSuccess("Image loaded successfully.");
+                         setTimeout(clearStatus, 2500);
+                         console.log("Image processing complete.");
+                    };
+
+                    originalImage.onerror = (err) => {
+                        console.error('Error loading image data into Image object:', err);
+                        showError('Could not load image data. The file might be corrupt or unsupported.');
+                        resetState(true);
                         setProcessing(false);
                     };
-                    originalImage.onerror = () => { showError('Could not load image data.'); resetState(true); setProcessing(false); };
+
+                    console.log("Setting image src to Data URL.");
                     originalImage.src = e.target.result;
                 };
-                reader.onerror = () => { showError('Error reading file.'); resetState(true); setProcessing(false); };
+
+                reader.onerror = (err) => {
+                    console.error('Error reading file with FileReader:', err);
+                    showError('Error reading the selected file.');
+                    resetState(true);
+                    setProcessing(false);
+                };
+
+                console.log("Reading file as Data URL.");
                 reader.readAsDataURL(file);
             }
 
-            function updatePreview() { // (Preview logic remains mostly the same)
+            function updatePreview() {
                 if (!originalImage || currentWidth <= 0 || currentHeight <= 0) {
                     ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
                     outputDimensionsDisplay.textContent = 'N/A';
-                    if (settingsChangedSinceApply) estimateOutputSize(); // Show estimate if changed
+                    if (settingsChangedSinceApply) estimateOutputSize();
                     return;
                 }
-                // ... (canvas sizing and transformation logic same as before) ...
                  const isSideways = currentRotation === 90 || currentRotation === 270;
                  displayWidth = isSideways ? currentHeight : currentWidth;
                  displayHeight = isSideways ? currentWidth : currentHeight;
-                 const maxPreviewDim = 600;
+                 const maxPreviewDim = Math.min(600, container.querySelector('.preview-section').clientWidth - 30); // Dynamic max width
                  let previewScale = 1;
                  if (displayWidth > maxPreviewDim || displayHeight > maxPreviewDim) {
                      previewScale = Math.min(maxPreviewDim / displayWidth, maxPreviewDim / displayHeight);
@@ -474,14 +573,11 @@
                  previewCanvas.width = canvasWidth; previewCanvas.height = canvasHeight;
                  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-                 // Background (Only for preview, download handles it separately)
                  if (currentFormat !== 'image/png') { ctx.fillStyle = currentBgColor; ctx.fillRect(0, 0, canvasWidth, canvasHeight); }
 
-                 // Filters
                  const filterString = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) grayscale(${adjustments.grayscale}%)`;
                  ctx.filter = filterString;
 
-                 // Transforms
                  ctx.save();
                  ctx.translate(canvasWidth / 2, canvasHeight / 2);
                  ctx.rotate(currentRotation * Math.PI / 180);
@@ -490,11 +586,10 @@
                  const sourceDrawHeight = isSideways ? currentWidth : currentHeight;
                  try {
                     ctx.drawImage( originalImage, -Math.round(sourceDrawWidth * previewScale / 2), -Math.round(sourceDrawHeight * previewScale / 2), Math.round(sourceDrawWidth * previewScale), Math.round(sourceDrawHeight * previewScale) );
-                 } catch (e) { console.error("Draw err:", e); showError("Preview render error."); }
-                 ctx.filter = 'none'; // Reset filter IN PREVIEW CONTEXT
+                 } catch (e) { console.error("Preview drawImage error:", e); showError("Preview render error."); }
+                 ctx.filter = 'none';
                  ctx.restore();
 
-                 // Border (in preview)
                  if (borderWidth > 0) {
                      const previewBorderWidth = Math.max(1, Math.round(borderWidth * previewScale));
                      ctx.strokeStyle = borderColor; ctx.lineWidth = previewBorderWidth;
@@ -502,7 +597,7 @@
                  }
 
                 outputDimensionsDisplay.textContent = `${currentWidth} x ${currentHeight}px (${(previewScale * 100).toFixed(0)}% preview)`;
-                if (settingsChangedSinceApply) estimateOutputSize(); // Update estimate if settings changed
+                if (settingsChangedSinceApply) estimateOutputSize();
             }
 
             // --- New Function: Apply Changes & Generate Blob ---
@@ -511,78 +606,93 @@
                     showError("Cannot apply changes - invalid state."); return;
                 }
                 setProcessing(true, "Applying changes...");
-                finalImageBlob = null; // Clear any previous blob
-                downloadButton.disabled = true; // Disable download until done
-                applyResizeButton.disabled = true; // Disable apply during processing
+                finalImageBlob = null;
+                downloadButton.disabled = true;
+                applyResizeButton.disabled = true;
 
-                try {
-                    // --- Use the final rendering logic here ---
-                    const tempCanvas = document.createElement('canvas');
-                    const tempCtx = tempCanvas.getContext('2d');
-                    const isSideways = currentRotation === 90 || currentRotation === 270;
-                    const finalCanvasWidth = isSideways ? currentHeight : currentWidth;
-                    const finalCanvasHeight = isSideways ? currentWidth : currentHeight;
-                    const totalWidth = finalCanvasWidth + (borderWidth * 2);
-                    const totalHeight = finalCanvasHeight + (borderWidth * 2);
+                // Use setTimeout to allow UI update (spinner) before heavy processing
+                setTimeout(() => {
+                    try {
+                        const tempCanvas = document.createElement('canvas');
+                        const tempCtx = tempCanvas.getContext('2d');
+                        const isSideways = currentRotation === 90 || currentRotation === 270;
+                        // Use currentWidth/Height for the image content itself
+                        const imageContentWidth = currentWidth;
+                        const imageContentHeight = currentHeight;
+                        // The canvas needs to accommodate rotation correctly
+                        const finalCanvasWidth = isSideways ? imageContentHeight : imageContentWidth;
+                        const finalCanvasHeight = isSideways ? imageContentWidth : imageContentHeight;
+                        // Total dimensions including border
+                        const totalWidth = finalCanvasWidth + (borderWidth * 2);
+                        const totalHeight = finalCanvasHeight + (borderWidth * 2);
 
-                    if (totalWidth <= 0 || totalHeight <= 0) throw new Error("Invalid final dimensions.");
-                    tempCanvas.width = totalWidth; tempCanvas.height = totalHeight;
+                        if (totalWidth <= 0 || totalHeight <= 0) throw new Error("Invalid final dimensions.");
+                        tempCanvas.width = totalWidth; tempCanvas.height = totalHeight;
 
-                    // --- CORRECTED Drawing Order ---
-                    // 1. Fill *entire canvas* with Border Color (if border exists)
-                    if (borderWidth > 0) {
-                        tempCtx.fillStyle = borderColor;
-                        tempCtx.fillRect(0, 0, totalWidth, totalHeight);
-                    }
-                    // 2. Fill *inner rectangle* with Background Color (if not PNG)
-                    if (currentFormat !== 'image/png') {
-                        tempCtx.fillStyle = currentBgColor;
-                        // Fill the area where the image will be drawn
-                        tempCtx.fillRect(borderWidth, borderWidth, finalCanvasWidth, finalCanvasHeight);
-                    }
-                    // 3. Apply Filters
-                    const filterString = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) grayscale(${adjustments.grayscale}%)`;
-                    tempCtx.filter = filterString;
-                    // 4. Apply Transformations & Draw Image
-                    tempCtx.save();
-                    tempCtx.translate(totalWidth / 2, totalHeight / 2); // Translate to canvas center
-                    tempCtx.rotate(currentRotation * Math.PI / 180);
-                    tempCtx.scale(flipState.horizontal ? -1 : 1, flipState.vertical ? -1 : 1);
-                    // Draw image centered based on its *content* dimensions (currentW/H)
-                    tempCtx.drawImage(originalImage, -currentWidth / 2, -currentHeight / 2, currentWidth, currentHeight);
-                    tempCtx.restore(); // Restore context (removes transforms and filters)
-                    tempCtx.filter = 'none'; // Explicitly reset filter just in case
+                        // 1. Fill *entire canvas* with Border Color
+                        if (borderWidth > 0) {
+                            tempCtx.fillStyle = borderColor;
+                            tempCtx.fillRect(0, 0, totalWidth, totalHeight);
+                        }
+                        // 2. Fill *inner rectangle* with Background Color (if not PNG and border exists OR if no border)
+                        if (currentFormat !== 'image/png') {
+                            tempCtx.fillStyle = currentBgColor;
+                            tempCtx.fillRect(borderWidth, borderWidth, finalCanvasWidth, finalCanvasHeight); // Fill only the inner area
+                        }
+                        // 3. Apply Filters
+                        const filterString = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%) grayscale(${adjustments.grayscale}%)`;
+                        tempCtx.filter = filterString;
+                        // 4. Apply Transformations & Draw Image
+                        tempCtx.save();
+                        // Translate to the center of the *inner* content area
+                        tempCtx.translate(borderWidth + finalCanvasWidth / 2, borderWidth + finalCanvasHeight / 2);
+                        tempCtx.rotate(currentRotation * Math.PI / 180);
+                        tempCtx.scale(flipState.horizontal ? -1 : 1, flipState.vertical ? -1 : 1);
+                        // Draw the image centered, using its original orientation dimensions before rotation
+                        tempCtx.drawImage(originalImage, -imageContentWidth / 2, -imageContentHeight / 2, imageContentWidth, imageContentHeight);
+                        tempCtx.restore(); // Restore context (removes transforms and filters)
+                        tempCtx.filter = 'none'; // Explicitly reset filter
 
-                    // 5. Generate Blob & Update UI
-                    tempCanvas.toBlob((blob) => {
-                        if (!blob) { showError("Failed to generate image blob."); setProcessing(false); applyResizeButton.disabled = !originalImage; return; }
+                        // 5. Generate Blob & Update UI
+                        tempCanvas.toBlob((blob) => {
+                            if (!blob) {
+                                console.error("Canvas toBlob failed to generate blob.");
+                                showError("Failed to generate image blob.");
+                                setProcessing(false);
+                                // Re-enable apply only if an image is still loaded
+                                applyResizeButton.disabled = !originalImage;
+                                return;
+                            }
 
-                        finalImageBlob = blob; // STORE THE GENERATED BLOB
-                        settingsChangedSinceApply = false; // Mark settings as applied
+                            finalImageBlob = blob;
+                            settingsChangedSinceApply = false;
 
-                        outputSizeDisplay.textContent = formatBytes(blob.size); // Display ACTUAL size
-                        sizeLabel.textContent = 'Actual Size:'; // Update label
-                        downloadButton.disabled = false; // ENABLE download
-                        applyResizeButton.disabled = true; // Disable apply until changes are made
+                            outputSizeDisplay.textContent = formatBytes(blob.size);
+                            sizeLabel.textContent = 'Actual Size:';
+                            downloadButton.disabled = false; // Enable download
+                            applyResizeButton.disabled = true; // Keep Apply disabled until settings change again
+                            setProcessing(false);
+                            showSuccess("Changes applied. Ready to download.");
+                            setTimeout(clearStatus, 3000);
+
+                        }, currentFormat, currentQuality);
+
+                    } catch (error) {
+                        console.error("Error applying changes:", error);
+                        showError(`Apply failed: ${error.message}`);
                         setProcessing(false);
-                        showSuccess("Changes applied. Ready to download.");
-                        setTimeout(clearStatus, 3000);
-
-                    }, currentFormat, currentQuality);
-
-                } catch (error) {
-                    console.error("Error applying changes:", error);
-                    showError(`Apply failed: ${error.message}`);
-                    setProcessing(false);
-                    applyResizeButton.disabled = !originalImage; // Re-enable apply on error
-                }
+                        applyResizeButton.disabled = !originalImage; // Re-enable apply on error
+                    }
+                }, 50); // Small delay for UI to show spinner
             }
 
 
             // --- Modified Download Function ---
             function handleDownload() {
-                 if (!finalImageBlob || isProcessing) { // Check for the generated blob
-                    showError("Please click 'Apply Changes' first to generate the final image."); return;
+                 if (!finalImageBlob || isProcessing) {
+                    showError("Please click 'Apply Changes' first to generate the final image.");
+                    if (!finalImageBlob) applyResizeButton.disabled = !originalImage; // Re-enable Apply if blob is missing
+                    return;
                 }
                 setProcessing(true, "Preparing download...");
 
@@ -596,11 +706,6 @@
                      document.body.appendChild(link); link.click(); document.body.removeChild(link);
                      URL.revokeObjectURL(url);
 
-                     // Optionally reset after download? Or keep blob for multiple downloads?
-                     // finalImageBlob = null; // Uncomment to require re-applying for next download
-                     // downloadButton.disabled = true; // Uncomment if resetting blob
-                     // applyResizeButton.disabled = false; // Uncomment if resetting blob
-
                      setProcessing(false);
                      showSuccess("Image downloaded!");
                      setTimeout(clearStatus, 3000);
@@ -612,11 +717,9 @@
                  }
             }
 
-
-             function estimateOutputSize() { // (Estimation logic remains the same)
+             function estimateOutputSize() {
                  if (!previewCanvas || previewCanvas.width <= 0 || previewCanvas.height <= 0 || !originalImage) { outputSizeDisplay.textContent = 'N/A'; return; }
                  try {
-                     // Only show estimate if settings have changed since last apply
                      if (settingsChangedSinceApply) {
                          const dataUrl = previewCanvas.toDataURL(currentFormat, currentQuality);
                          const head = `data:${currentFormat};base64,`;
@@ -624,62 +727,87 @@
                             const base64Data = dataUrl.substring(head.length);
                             const padding = (base64Data.endsWith('==')) ? 2 : (base64Data.endsWith('=')) ? 1 : 0;
                             const fileSizeInBytes = (base64Data.length * 0.75) - padding;
-                            outputSizeDisplay.textContent = `~ ${formatBytes(fileSizeInBytes)}`; // Add tilde for estimate
+                            outputSizeDisplay.textContent = `~ ${formatBytes(fileSizeInBytes)}`;
                          } else { outputSizeDisplay.textContent = 'N/A'; }
-                          sizeLabel.textContent = 'Estimated Size:'; // Ensure label is correct
+                          sizeLabel.textContent = 'Estimated Size:';
                      }
-                 } catch (error) { console.error("Size est err:", error); outputSizeDisplay.textContent = 'Error'; }
+                 } catch (error) { console.warn("Size estimation error:", error); outputSizeDisplay.textContent = 'Estimate N/A'; } // Use warn, less critical
              }
 
             // --- Utility Functions ---
              function setProcessing(processing, message = "") {
                  isProcessing = processing;
-                 statusMessage.className = 'status-message';
-                 // Disable all major controls during processing
-                 const controlsToDisable = [widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn, resetButton, applyResizeButton, downloadButton];
-                 controlsToDisable.forEach(el => { if(el) el.disabled = processing; });
+                 statusMessage.className = 'status-message'; // Reset classes first
+                 statusMessage.textContent = message || ''; // Set text content
+                 loadingSpinner.style.display = processing ? 'inline-block' : 'none'; // Show/hide spinner
 
-                 if (processing) {
-                     statusMessage.textContent = message || "Processing..."; statusMessage.classList.add('info');
-                 } else {
-                     // Re-enable buttons based on state AFTER processing
-                     if (originalImage) {
-                         resetButton.disabled = false;
-                         applyResizeButton.disabled = settingsChangedSinceApply; // Enable Apply if settings changed
-                         downloadButton.disabled = settingsChangedSinceApply || !finalImageBlob; // Enable Download only if applied and blob exists
-                     } else {
-                         resetButton.disabled = true;
-                         applyResizeButton.disabled = true;
-                         downloadButton.disabled = true;
-                     }
-                      // Re-enable sliders/inputs if an image is loaded
-                      const inputControls = [widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn];
-                      inputControls.forEach(el => {if (el) el.disabled = !originalImage; });
+                 // Disable all interactive elements during processing
+                 const controlsToDisable = [ imageInput, widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn, resetButton, applyResizeButton, downloadButton ];
+                 controlsToDisable.forEach(el => { if(el) el.disabled = processing; });
+                 // Special handling for labels linked to disabled inputs if needed (usually browsers handle this)
+                 container.querySelector('.upload-button').style.pointerEvents = processing ? 'none' : '';
+                 container.querySelector('.upload-button').style.opacity = processing ? '0.6' : '1';
+
+
+                 if (processing && message) {
+                     statusMessage.classList.add('info');
+                 } else if (!processing) {
+                      // Re-enable controls based on state AFTER processing is false
+                      if (originalImage) {
+                          const inputControls = [widthInput, heightInput, aspectRatioLock, qualitySlider, formatSelect, bgColorInput, borderWidthInput, borderColorInput, brightnessSlider, contrastSlider, saturationSlider, grayscaleSlider, rotateLeftBtn, rotateRightBtn, flipHorizontalBtn, flipVerticalBtn, resetAdjustmentsBtn, resetButton ];
+                          inputControls.forEach(el => { if (el) el.disabled = false; });
+                          imageInput.disabled = false; // Re-enable upload input
+
+                          // Button states depend on whether changes are applied
+                          applyResizeButton.disabled = !settingsChangedSinceApply;
+                          downloadButton.disabled = settingsChangedSinceApply || !finalImageBlob;
+                          resetButton.disabled = false;
+                      } else {
+                          // If no image, most things remain disabled
+                          resetButton.disabled = true;
+                          applyResizeButton.disabled = true;
+                          downloadButton.disabled = true;
+                          imageInput.disabled = false; // Keep upload enabled
+                      }
+                      // Ensure upload button style is reset
+                       container.querySelector('.upload-button').style.pointerEvents = '';
+                       container.querySelector('.upload-button').style.opacity = '1';
                  }
              }
              function formatBytes(bytes, decimals = 2) { if (!+bytes) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`; }
              function getFileExtension(mimeType) { const typeMap = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'image/bmp': 'bmp' }; return typeMap[mimeType] || 'jpg'; }
-             function showError(message) { statusMessage.textContent = message; statusMessage.className = 'status-message error'; }
-             function showSuccess(message) { statusMessage.textContent = message; statusMessage.className = 'status-message success'; }
-             function clearStatus() { statusMessage.textContent = ''; statusMessage.className = 'status-message'; }
+             function showError(message) { clearStatus(); statusMessage.textContent = message; statusMessage.className = 'status-message error'; }
+             function showSuccess(message) { clearStatus(); statusMessage.textContent = message; statusMessage.className = 'status-message success'; }
+             function clearStatus() { statusMessage.textContent = ''; statusMessage.className = 'status-message'; loadingSpinner.style.display = 'none'; } // Hide spinner too
 
              function resetAdjustments() { adjustments = { ...defaultAdjustments }; brightnessSlider.value = adjustments.brightness; contrastSlider.value = adjustments.contrast; saturationSlider.value = adjustments.saturation; grayscaleSlider.value = adjustments.grayscale; brightnessValue.textContent = `${adjustments.brightness}%`; contrastValue.textContent = `${adjustments.contrast}%`; saturationValue.textContent = `${adjustments.saturation}%`; grayscaleValue.textContent = `${adjustments.grayscale}%`; updatePreview(); }
              function resetTransformationsAndSettings() { currentRotation = 0; flipState = { horizontal: false, vertical: false }; currentBgColor = '#FFFFFF'; currentFormat = 'image/jpeg'; currentQuality = 0.92; borderWidth = defaultBorderWidth; borderColor = defaultBorderColor; aspectRatioLock.checked = true; formatSelect.value = currentFormat; qualitySlider.value = currentQuality; qualityValueDisplay.textContent = currentQuality.toFixed(2); bgColorInput.value = currentBgColor; borderWidthInput.value = borderWidth; borderColorInput.value = borderColor; qualityControlGroup.style.display = 'block'; backgroundColorGroup.style.display = 'flex'; resetAdjustments(); }
              function handleReset() { resetState(true); }
 
             function resetState(hardReset = true) {
+                console.log(`Resetting state (hardReset: ${hardReset})`);
                 originalImage = null; originalWidth = 0; originalHeight = 0; currentWidth = 0; currentHeight = 0; aspectRatio = 1; finalImageBlob = null; settingsChangedSinceApply = true;
                 resetTransformationsAndSettings();
-                ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height); previewCanvas.width = 1; previewCanvas.height = 1;
+                ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height); previewCanvas.width = 1; previewCanvas.height = 1; // Reset canvas size
                 originalDimensionsDisplay.textContent = 'N/A'; outputDimensionsDisplay.textContent = 'N/A';
                 widthInput.value = ''; heightInput.value = '';
                 outputSizeDisplay.textContent = 'N/A'; sizeLabel.textContent = 'Estimated Size:';
                 fileNameDisplay.textContent = 'No file selected';
-                mainContent.style.display = 'none';
+                mainContent.style.display = 'none'; // Hide controls
                 applyResizeButton.disabled = true; downloadButton.disabled = true; resetButton.disabled = true;
-                clearStatus(); setProcessing(false);
-                 if (hardReset) imageInput.value = '';
+                clearStatus();
+                setProcessing(false); // Ensure processing state is false and controls are appropriately enabled/disabled (upload should be enabled)
+                 if (hardReset) {
+                    try { imageInput.value = ''; } catch(e) { console.warn("Could not reset file input value:", e); } // Clear file input selection
+                 }
             }
+
+            // Initial setup: Ensure main content is hidden
+            mainContent.style.display = 'none';
+            resetButton.disabled = true;
+            applyResizeButton.disabled = true;
+            downloadButton.disabled = true;
+
 
         }); // End DOMContentLoaded
     </script>
